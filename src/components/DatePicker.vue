@@ -112,6 +112,12 @@ export default {
       });
     },
   },
+  mounted() {
+    document.addEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
+  },
+  destroyed() {
+    document.removeEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
+  },
   computed: {
     headerText() {
       return `${moment().month(this.currentMonth).format('MMMM')} ${this.currentYear}`;
@@ -147,6 +153,15 @@ export default {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
       return moment(dateToCheck).isAfter(this.maxDate, 'day');
+    },
+    handleKeyPress(keyCode) {
+      if (keyCode === 27) this.handleEscapeKeyPress();
+    },
+    handleEscapeKeyPress() {
+      if (!this.isVisible) return;
+      this.$emit('close-datepicker');
+      const dateInput = document.getElementById('datepicker');
+      if (dateInput) dateInput.focus();
     },
   }
 }

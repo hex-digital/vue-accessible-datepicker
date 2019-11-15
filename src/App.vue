@@ -32,6 +32,7 @@
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
+        @close-datepicker="isDatePickerVisible = false"
       />
   </div>
 </template>
