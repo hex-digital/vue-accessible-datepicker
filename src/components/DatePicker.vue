@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isVisible" class="v-datepicker">
+  <div v-if="isVisible" class="v-datepicker__picker">
     <div class="v-datepicker__header">
       <button class="v-datepicker__change-month-button" aria-label="Previous month" @click="goToPreviousMonth">
         <img
@@ -101,25 +101,28 @@ export default {
     },
     selectDate(date) {
       this.selectedDate = moment(new Date(this.currentYear, this.currentMonth, date));
+      this.$emit('date-picked', this.selectedDate);
     }
   }
 }
 </script>
 
 <style lang="scss">
-$dark-grey: #656565;
 $light-grey: #dbdbdb;
-$white: #ffffff;
 
 .v-datepicker {
-  background-color: $white;
-  border: 1px solid $light-grey;
-  color: $dark-grey;
-  font-family: Arial, Helvetica, sans-serif;
+  &__picker {
+    background-color: white;
+    border: 1px solid $light-grey;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
 
-  @media only screen and (min-width: 50em) {
-    max-width: 20em;
+    @media only screen and (min-width: 50em) {
+      max-width: 20em;
+    }
+
   }
+
 
   &__header {
     border-bottom: 1px solid $light-grey;
@@ -153,7 +156,7 @@ $white: #ffffff;
   }
 
   &__weekdays {
-    color: $dark-grey;
+    color: black;
     font-weight: bold;
     margin-bottom: 1em;
   }
@@ -166,7 +169,7 @@ $white: #ffffff;
   }
 
   &__month-date {
-    color: $dark-grey;
+    color: black;
     padding: 0.75em;
     text-decoration: none;
     transition-property: background-color, color;
@@ -174,13 +177,12 @@ $white: #ffffff;
     transition-duration: 0.3s;
 
     &:hover:not(.v-datepicker__filler-date) {
-      background-color: $dark-grey;
-      color: $white;
+      background-color: $light-grey;
     }
 
     &--selected {
-      background-color: $dark-grey;
-      color: $white;
+      background-color: black;
+      color: white;
     }
 
   }

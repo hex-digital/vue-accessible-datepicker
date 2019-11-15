@@ -1,13 +1,19 @@
 <template>
-  <div id="app">
-      <label id="datepickerLabel" for="datepicker">Date (mm/dd/yyyy):</label>
+  <div id="app" class="v-datepicker">
+      <label
+        id="datepickerLabel"
+        for="datepicker"
+        class="v-datepicker__input-label"
+      >
+        Date (mm/dd/yyyy):
+      </label>
       <div class="v-datepicker__input-wrapper">
-        <input type="text" id="datepicker">
-        <button @click="showDatePicker">
-          <img src="https://dequeuniversity.com/assets/images/calendar.png" alt="calendar icon">
+        <input type="text" id="datepicker" class="v-datepicker__input" v-model="dateSelected">
+        <button @click="toggleDatePicker" class="v-datepicker__toggle-button">
+          <img src="./assets/calendar.svg" alt="calendar icon" class="v-datepicker__toggle-button-icon">
         </button>
       </div>
-      <date-picker :is-visible="isDatePickerVisible"/>
+      <date-picker :is-visible="isDatePickerVisible" @date-picked="handleDatePicked" />
   </div>
 </template>
 
@@ -21,11 +27,50 @@ export default {
   },
   data: () => ({
     isDatePickerVisible: false,
+    dateSelected: null,
   }),
   methods: {
-    showDatePicker() {
-      this.isDatePickerVisible = true;
+    toggleDatePicker() {
+      this.isDatePickerVisible = !this.isDatePickerVisible;
+    },
+    handleDatePicked(date) {
+      console.log(date.format('MM/DD/YYYY')); // eslint-disable-line
+      this.dateSelected = date.format('MM/DD/YYYY');
+      this.isDatePickerVisible = false;
     }
   }
 }
 </script>
+
+<style lang="scss">
+.v-datepicker {
+  font-family: Arial, Helvetica, sans-serif;
+
+  &__input-label {
+    display: block;
+    margin-bottom: 0.5em;
+  }
+
+  &__input-wrapper {
+    display: flex;
+    margin-bottom: 0.5em;
+  }
+
+  &__input {
+    box-sizing: border-box;
+    font-size: 1em;
+    padding: 0.5em;
+  }
+
+  &__toggle-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &-icon {
+      width: 3em;
+    }
+  }
+
+}
+</style>
