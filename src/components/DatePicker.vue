@@ -1,36 +1,57 @@
 <template>
   <div v-if="isVisible" class="v-datepicker__picker">
     <div class="v-datepicker__header">
-      <button class="v-datepicker__change-month-button" aria-label="Previous month" @click="goToPreviousMonth">
+      <button
+        class="v-datepicker__change-month-button"
+        aria-label="Previous month"
+        @click="$emit('go-to-previous-month')"
+      >
         <img
           src="../assets/back-arrow.svg"
           alt="back arrow"
-          width="15"
+          width="16"
         >
       </button>
       <p>{{ headerText }}</p>
-      <button class="v-datepicker__change-month-button" aria-label="Next month" @click="goToNextMonth">
+      <button
+        class="v-datepicker__change-month-button"
+        aria-label="Next month"
+        @click="$emit('go-to-next-month')"
+      >
         <img
           src="../assets/next-arrow.svg"
           alt="next arrow"
-          width="15"
+          width="16"
         >
       </button>
     </div>
 
     <div class="v-datepicker__content">
       <ul class="v-datepicker__weekdays">
-        <li v-for="(day, index) in dayNamesLetters" :key="index" class="v-datepicker__weekday">{{ day }}</li>
+        <li
+          v-for="(day, index) in dayNamesLetters"
+          :key="index"
+          class="v-datepicker__weekday"
+        >
+          {{ day }}
+        </li>
       </ul>
+
       <div class="v-datepicker__month-dates">
-        <span v-for="(blank, index) in firstDayInMonth" :key="`blank-${index}`" class="v-datepicker__filler-date v-datepicker__month-date">&nbsp;</span>
+        <span
+          v-for="(blank, index) in firstDayInMonth"
+          :key="`blank-${index}`"
+          class="v-datepicker__filler-date v-datepicker__month-date"
+        >
+            &nbsp;
+        </span>
         <a
           href
           v-for="(date, index) in daysInCurrentMonth"
           :key="`date-${index}`"
           :class="{'v-datepicker__month-date--selected': isSelected(date)}"
           class="v-datepicker__month-date"
-          @click.prevent="selectDate(date)"
+          @click.prevent="$emit('pick-date', { date, currentMonth, currentYear })"
         >
           {{ date }}
         </a>
@@ -47,10 +68,6 @@ export default {
   name: 'DatePicker',
   data: () => ({
     dayNamesLetters,
-    currentDate: moment().get('date'),
-    currentMonth: moment().get('month'),
-    currentYear: moment().get('year'),
-    selectedDate: moment(new Date()),
   }),
   props: {
     isVisible: {
@@ -64,7 +81,19 @@ export default {
     maxDate: {
       type: String,
       default: null,
-    }
+    },
+    selectedDate: {
+      type: Object,
+      required: true,
+    },
+    currentMonth: {
+      type: Number,
+      required: true,
+    },
+    currentYear: {
+      type: Number,
+      required: true,
+    },
   },
   computed: {
     headerText() {
@@ -82,27 +111,6 @@ export default {
     isSelected(date) {
       return moment(new Date(this.currentYear, this.currentMonth, date, )).isSame(this.selectedDate, 'day');
     },
-    goToPreviousMonth() {
-      if (this.currentMonth === 0) {
-        this.currentMonth = 11;
-        this.currentYear = this.currentYear - 1;
-      } else {
-        this.currentMonth = this.currentMonth - 1;
-      }
-    },
-    goToNextMonth() {
-      const nextMonth = this.currentMonth + 1;
-      if (nextMonth > 11) {
-        this.currentMonth = 0;
-        this.currentYear = this.currentYear + 1;
-      } else {
-        this.currentMonth = nextMonth;
-      }
-    },
-    selectDate(date) {
-      this.selectedDate = moment(new Date(this.currentYear, this.currentMonth, date));
-      this.$emit('date-picked', this.selectedDate);
-    }
   }
 }
 </script>
@@ -122,7 +130,6 @@ $light-grey: #dbdbdb;
     }
 
   }
-
 
   &__header {
     border-bottom: 1px solid $light-grey;
