@@ -34,7 +34,6 @@ export default {
       this.isDatePickerVisible = !this.isDatePickerVisible;
     },
     handleDatePicked(date) {
-      console.log(date.format('MM/DD/YYYY')); // eslint-disable-line
       this.dateSelected = date.format('MM/DD/YYYY');
       this.isDatePickerVisible = false;
     }
