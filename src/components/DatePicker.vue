@@ -2,6 +2,8 @@
   <div v-if="isVisible" class="v-datepicker__picker">
     <div class="v-datepicker__header">
       <button
+        :disabled="monthIsSameMinMonth"
+        :class="{'v-datepicker__change-month-button--disabled': monthIsSameMinMonth}"
         class="v-datepicker__change-month-button"
         aria-label="Previous month"
         @click="$emit('go-to-previous-month')"
@@ -9,11 +11,13 @@
         <img
           src="../assets/back-arrow.svg"
           alt="back arrow"
-          width="16"
+          width="18"
         >
       </button>
       <p>{{ headerText }}</p>
       <button
+        :disabled="monthIsSameMaxMonth"
+        :class="{'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth}"
         class="v-datepicker__change-month-button"
         aria-label="Next month"
         @click="$emit('go-to-next-month')"
@@ -21,7 +25,7 @@
         <img
           src="../assets/next-arrow.svg"
           alt="next arrow"
-          width="16"
+          width="18"
         >
       </button>
     </div>
@@ -108,6 +112,16 @@ export default {
     firstDayInMonth() {
       return moment([this.currentYear, this.currentMonth, 1]).weekday();
     },
+    monthIsSameMinMonth() {
+      if (!this.minDate) return false;
+      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth));
+      return moment(dateToCheck).isSame(this.minDate, 'month');
+    },
+    monthIsSameMaxMonth() {
+      if (!this.maxDate) return false;
+      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth));
+      return moment(dateToCheck).isSame(this.maxDate, 'month');
+    },
   },
   methods: {
     moment,
@@ -122,7 +136,7 @@ export default {
     isAfterMaxDate(date) {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
-      return moment(dateToCheck).isAfter(this.minDate, 'day');
+      return moment(dateToCheck).isAfter(this.maxDate, 'day');
     },
   }
 }
@@ -163,8 +177,14 @@ $light-grey: #dbdbdb;
     transition: opacity 0.3s ease;
 
     &:hover {
-      opacity: 0.5;
+      opacity: 0.4;
     }
+
+    &--disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
   }
 
   &__weekdays,
