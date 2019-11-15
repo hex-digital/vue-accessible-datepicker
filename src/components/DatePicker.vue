@@ -53,6 +53,7 @@
           href
           v-for="(date, index) in daysInCurrentMonth"
           :key="`date-${index}`"
+          :ref="`${isSelected(date) ? 'selectedDateElement' : ''}`"
           :class="{
             'v-datepicker__month-date--selected': isSelected(date),
             'v-datepicker__month-date--disabled': isBeforeMinDate(date) || isAfterMaxDate(date)
@@ -100,6 +101,15 @@ export default {
     currentYear: {
       type: Number,
       required: true,
+    },
+  },
+  watch: {
+    isVisible(visible) {
+      this.$nextTick(() => {
+        if (visible && this.$refs.selectedDateElement && this.$refs.selectedDateElement.length) {
+          this.$refs.selectedDateElement[0].focus();
+        }
+      });
     },
   },
   computed: {
