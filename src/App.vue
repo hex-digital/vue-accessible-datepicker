@@ -26,6 +26,7 @@
         :selected-date="selectedDate"
         :current-year="currentYear"
         :current-month="currentMonth"
+        v-on-clickaway="toggleDatePicker"
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
@@ -35,12 +36,16 @@
 
 <script>
 import moment from 'moment';
+import { directive as onClickaway } from 'vue-clickaway';
 import DatePicker from './components/DatePicker';
 
 export default {
   name: 'app',
   components: {
     DatePicker,
+  },
+  directives: {
+    onClickaway: onClickaway,
   },
   data: () => ({
     isDatePickerVisible: false,
@@ -59,15 +64,13 @@ export default {
       currentMonth = this.currentMonth,
       input = false,
     }) {
+      if (input && !this.selectedDateInput.length) return;
       const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(currentYear, currentMonth, date));
 
       this.selectedDate = newDate;
       if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
 
-      if (input) {
-        this.currentYear = newDate.get('year');
-        this.currentMonth = newDate.get('month');
-      }
+      if (input) this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
 
       this.isDatePickerVisible = false;
     },
@@ -88,6 +91,10 @@ export default {
         this.currentMonth = nextMonth;
       }
     },
+    updateCurrentDates({ year, month }) {
+        this.currentYear = year;
+        this.currentMonth = month;
+    }
   }
 }
 </script>
