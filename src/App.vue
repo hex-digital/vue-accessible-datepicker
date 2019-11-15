@@ -26,6 +26,8 @@
         :selected-date="selectedDate"
         :current-year="currentYear"
         :current-month="currentMonth"
+        :min-date="minDate"
+        :max-date="maxDate"
         v-on-clickaway="toggleDatePicker"
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
@@ -54,6 +56,16 @@ export default {
     currentYear: moment().get('year'),
     selectedDateInput: '',
   }),
+  props: {
+    minDate: {
+      type: Object,
+      default: null,
+    },
+    maxDate: {
+      type: Object,
+      default: null,
+    }
+  },
   methods: {
     toggleDatePicker() {
       this.isDatePickerVisible = !this.isDatePickerVisible;

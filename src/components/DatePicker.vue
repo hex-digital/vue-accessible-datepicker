@@ -49,7 +49,10 @@
           href
           v-for="(date, index) in daysInCurrentMonth"
           :key="`date-${index}`"
-          :class="{'v-datepicker__month-date--selected': isSelected(date)}"
+          :class="{
+            'v-datepicker__month-date--selected': isSelected(date),
+            'v-datepicker__month-date--disabled': isBeforeMinDate(date) || isAfterMaxDate(date)
+          }"
           class="v-datepicker__month-date"
           @click.prevent="$emit('pick-date', { date, currentMonth, currentYear })"
         >
@@ -75,11 +78,11 @@ export default {
       default: false,
     },
     minDate: {
-      type: String,
+      type: Object,
       default: null,
     },
     maxDate: {
-      type: String,
+      type: Object,
       default: null,
     },
     selectedDate: {
@@ -109,7 +112,17 @@ export default {
   methods: {
     moment,
     isSelected(date) {
-      return moment(new Date(this.currentYear, this.currentMonth, date, )).isSame(this.selectedDate, 'day');
+      return moment(new Date(this.currentYear, this.currentMonth, date)).isSame(this.selectedDate, 'day');
+    },
+    isBeforeMinDate(date) {
+      if (!this.minDate) return false;
+      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
+      return moment(dateToCheck).isBefore(this.minDate, 'day');
+    },
+    isAfterMaxDate(date) {
+      if (!this.maxDate) return false;
+      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
+      return moment(dateToCheck).isAfter(this.minDate, 'day');
     },
   }
 }
@@ -191,6 +204,11 @@ $light-grey: #dbdbdb;
       background-color: black;
       color: white;
     }
+
+    &--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    };
 
   }
 
