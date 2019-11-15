@@ -22,19 +22,19 @@
       <ul class="v-datepicker__weekdays">
         <li v-for="(day, index) in dayNamesLetters" :key="index" class="v-datepicker__weekday">{{ day }}</li>
       </ul>
-      <ul class="v-datepicker__month-dates">
-        <li v-for="(blank, index) in firstDayInMonth" :key="`blank-${index}`" class="v-datepicker__month-date">&nbsp;</li>
+      <div class="v-datepicker__month-dates">
+        <span v-for="(blank, index) in firstDayInMonth" :key="`blank-${index}`" class="v-datepicker__filler-date v-datepicker__month-date">&nbsp;</span>
         <a
           href
           v-for="(date, index) in daysInCurrentMonth"
           :key="`date-${index}`"
-          :class="{'v-datepicker__month-date--selected': date === selectedDate}"
+          :class="{'v-datepicker__month-date--selected': isSelected(date)}"
           class="v-datepicker__month-date"
           @click.prevent="selectDate(date)"
         >
           {{ date }}
         </a>
-      </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -50,7 +50,7 @@ export default {
     currentDate: moment().get('date'),
     currentMonth: moment().get('month'),
     currentYear: moment().get('year'),
-    selectedDate: moment().get('date'),
+    selectedDate: moment(new Date()),
   }),
   props: {
     isVisible: {
@@ -74,10 +74,14 @@ export default {
       return moment().month(this.currentMonth).daysInMonth();
     },
     firstDayInMonth() {
-      return moment().subtract(this.currentDate - 1, 'days').weekday();
+      return moment([this.currentYear, this.currentMonth, 1]).weekday();
     },
   },
   methods: {
+    moment,
+    isSelected(date) {
+      return moment(new Date(this.currentYear, this.currentMonth, date, )).isSame(this.selectedDate, 'day');
+    },
     goToPreviousMonth() {
       if (this.currentMonth === 0) {
         this.currentMonth = 11;
@@ -96,32 +100,37 @@ export default {
       }
     },
     selectDate(date) {
-      this.selectedDate = date;
+      this.selectedDate = moment(new Date(this.currentYear, this.currentMonth, date));
     }
   }
 }
 </script>
 
 <style lang="scss">
-$dark-grey: #414141;
+$dark-grey: #656565;
 $light-grey: #dbdbdb;
 $white: #ffffff;
 
 .v-datepicker {
-  background-color: $light-grey;
-  border-radius: 5px;
+  background-color: $white;
+  border: 1px solid $light-grey;
   color: $dark-grey;
   font-family: Arial, Helvetica, sans-serif;
-  padding: 1em 1.5em 1.5em 1.5em;
 
-  @media only screen and (min-width: 600px) {
+  @media only screen and (min-width: 50em) {
     max-width: 20em;
   }
 
   &__header {
+    border-bottom: 1px solid $light-grey;
     display: flex;
     justify-content: space-between;
     margin-bottom: 1em;
+    padding: 0.5em 1em;
+  }
+
+  &__content {
+    padding: 0.5em 0.5em;
   }
 
   &__change-month-button {
@@ -144,6 +153,7 @@ $white: #ffffff;
   }
 
   &__weekdays {
+    color: $dark-grey;
     font-weight: bold;
     margin-bottom: 1em;
   }
@@ -163,17 +173,17 @@ $white: #ffffff;
     transition-timing-function: ease;
     transition-duration: 0.3s;
 
-    &:hover {
+    &:hover:not(.v-datepicker__filler-date) {
+      background-color: $dark-grey;
+      color: $white;
+    }
+
+    &--selected {
       background-color: $dark-grey;
       color: $white;
     }
 
   }
 
-}
-
-.v-datepicker__month-date--selected {
-  background-color: $dark-grey;
-  color: $white;
 }
 </style>

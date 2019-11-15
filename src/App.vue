@@ -1,28 +1,31 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+      <label id="datepickerLabel" for="datepicker">Date (mm/dd/yyyy):</label>
+      <div class="v-datepicker__input-wrapper">
+        <input type="text" id="datepicker">
+        <button @click="showDatePicker">
+          <img src="https://dequeuniversity.com/assets/images/calendar.png" alt="calendar icon">
+        </button>
+      </div>
+      <date-picker :is-visible="isDatePickerVisible"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import DatePicker from './components/DatePicker';
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    DatePicker,
+  },
+  data: () => ({
+    isDatePickerVisible: false,
+  }),
+  methods: {
+    showDatePicker() {
+      this.isDatePickerVisible = true;
+    }
   }
 }
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
