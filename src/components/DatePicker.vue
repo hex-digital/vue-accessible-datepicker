@@ -52,17 +52,16 @@
         <a
           href
           v-for="(date, index) in daysInCurrentMonth"
+          :id="isSelected(date) ? 'selectedDateElement' : ''"
           :key="`date-${index}`"
-          :ref="`${isSelected(date) ? 'selectedDateElement' : ''}`"
+          :ref="`date-${date}`"
           :class="{
             'v-datepicker__month-date--selected': isSelected(date),
             'v-datepicker__month-date--disabled': isBeforeMinDate(date) || isAfterMaxDate(date)
           }"
           class="v-datepicker__month-date"
           @click.prevent="$emit('pick-date', { date, currentMonth, currentYear })"
-        >
-          {{ date }}
-        </a>
+        >{{ date }}</a>
       </div>
     </div>
   </div>
@@ -71,11 +70,19 @@
 <script>
 import moment from 'moment';
 import { dayNamesLetters } from '../helpers/date-formats';
+import {
+  ESC,
+  LEFT,
+  UP,
+  RIGHT,
+  DOWN,
+} from '../constants/ascii-keys';
 
 export default {
   name: 'DatePicker',
   data: () => ({
     dayNamesLetters,
+    focusedDateRef: null,
   }),
   props: {
     isVisible: {
@@ -106,8 +113,12 @@ export default {
   watch: {
     isVisible(visible) {
       this.$nextTick(() => {
-        if (visible && this.$refs.selectedDateElement && this.$refs.selectedDateElement.length) {
-          this.$refs.selectedDateElement[0].focus();
+        if (visible) {
+          const selectedElement = document.getElementById('selectedDateElement');
+          if (!selectedElement) return;
+
+          selectedElement.focus();
+          this.focusedDateRef = selectedElement.ref;
         }
       });
     },
@@ -155,7 +166,25 @@ export default {
       return moment(dateToCheck).isAfter(this.maxDate, 'day');
     },
     handleKeyPress(keyCode) {
-      if (keyCode === 27) this.handleEscapeKeyPress();
+      switch (keyCode) {
+      case ESC:
+        this.handleEscapeKeyPress();
+        break;
+      case LEFT:
+        this.handleHorizontalKeyPress(LEFT);
+        break;
+      case UP:
+        this.handleEscapeKeyPress();
+        break;
+      case RIGHT:
+        this.handleHorizontalKeyPress(RIGHT);
+        break;
+      case DOWN:
+        this.handleEscapeKeyPress();
+        break;
+      default:
+        break;
+      }
     },
     handleEscapeKeyPress() {
       if (!this.isVisible) return;
@@ -163,6 +192,9 @@ export default {
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
     },
+    handleHorizontalKeyPress(direction) { // eslint-disable-line
+
+    }
   }
 }
 </script>
