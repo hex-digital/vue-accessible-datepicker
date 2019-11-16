@@ -83,6 +83,7 @@ export default {
   data: () => ({
     dayNamesLetters,
     focusedDateRef: null,
+    firstDateOfMonth: 1,
   }),
   props: {
     isVisible: {
@@ -109,6 +110,10 @@ export default {
       type: Number,
       required: true,
     },
+    daysInCurrentMonth: {
+      type: Number,
+      required: true,
+    }
   },
   watch: {
     isVisible(visible) {
@@ -118,7 +123,7 @@ export default {
           if (!selectedElement) return;
 
           selectedElement.focus();
-          this.focusedDateRef = selectedElement.ref;
+          this.focusedDateRef = `date-${selectedElement.text}`;
         }
       });
     },
@@ -132,9 +137,6 @@ export default {
   computed: {
     headerText() {
       return `${moment().month(this.currentMonth).format('MMMM')} ${this.currentYear}`;
-    },
-    daysInCurrentMonth() {
-      return moment().month(this.currentMonth).daysInMonth();
     },
     firstDayInMonth() {
       return moment([this.currentYear, this.currentMonth, 1]).weekday();
@@ -171,16 +173,16 @@ export default {
         this.handleEscapeKeyPress();
         break;
       case LEFT:
-        this.handleHorizontalKeyPress(LEFT);
+        this.handleLeftKeyPress();
         break;
       case UP:
-        this.handleEscapeKeyPress();
+        this.handleVerticalKeyPress(UP);
         break;
       case RIGHT:
-        this.handleHorizontalKeyPress(RIGHT);
+        this.handleRightKeyPress();
         break;
       case DOWN:
-        this.handleEscapeKeyPress();
+        this.handleVerticalKeyPress(DOWN);
         break;
       default:
         break;
@@ -192,9 +194,40 @@ export default {
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
     },
-    handleHorizontalKeyPress(direction) { // eslint-disable-line
+    handleLeftKeyPress() {
+      const focusedElement = this.$refs[this.focusedDateRef][0];
+      if (!focusedElement) return;
 
-    }
+      const currentFocusedDate = parseInt(focusedElement.text);
+      const isAtBeginningOfMonth = currentFocusedDate === this.firstDateOfMonth;
+      if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
+
+      this.$nextTick(() => {
+        const previousDateRef = `date-${isAtBeginningOfMonth ? this.daysInCurrentMonth : currentFocusedDate - 1}`;
+        const previousElement = this.$refs[previousDateRef][0];
+        if (!previousElement) return;
+
+        this.focusedDateRef = previousDateRef;
+        previousElement.focus();
+      });
+    },
+    handleRightKeyPress() {
+      const focusedElement = this.$refs[this.focusedDateRef][0];
+      if (!focusedElement) return;
+
+      const currentFocusedDate = parseInt(focusedElement.text);
+      const isAtEndOfMonth = currentFocusedDate === this.daysInCurrentMonth;
+      if (isAtEndOfMonth) this.$emit('go-to-next-month');
+
+      this.$nextTick(() => {
+        const nextDateRef = `date-${isAtEndOfMonth ? this.firstDateOfMonth : currentFocusedDate + 1}`
+        const nextElement = this.$refs[nextDateRef][0];
+        if (!nextElement) return;
+
+        this.focusedDateRef = nextDateRef;
+        nextElement.focus();
+      });
+    },
   }
 }
 </script>
@@ -209,7 +242,7 @@ $light-grey: #dbdbdb;
     color: black;
     font-family: Arial, Helvetica, sans-serif;
 
-    @media only screen and (min-width: 50em) {
+    @media only screen and (min-width: 40em) {
       max-width: 20em;
     }
 

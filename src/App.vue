@@ -26,6 +26,7 @@
         :selected-date="selectedDate"
         :current-year="currentYear"
         :current-month="currentMonth"
+        :days-in-current-month="daysInCurrentMonth"
         :min-date="minDate"
         :max-date="maxDate"
         v-on-clickaway="toggleDatePicker"
@@ -53,6 +54,7 @@ export default {
   data: () => ({
     isDatePickerVisible: false,
     selectedDate: moment(new Date()),
+    daysInCurrentMonth: moment().daysInMonth(),
     currentMonth: moment().get('month'),
     currentYear: moment().get('year'),
     selectedDateInput: '',
@@ -94,6 +96,7 @@ export default {
       } else {
         this.currentMonth = this.currentMonth - 1;
       }
+      this.updateDaysInMonth();
     },
     goToNextMonth() {
       const nextMonth = this.currentMonth + 1;
@@ -103,10 +106,14 @@ export default {
       } else {
         this.currentMonth = nextMonth;
       }
+      this.updateDaysInMonth();
     },
     updateCurrentDates({ year, month }) {
         this.currentYear = year;
         this.currentMonth = month;
+    },
+    updateDaysInMonth() {
+      this.daysInCurrentMonth = moment().month(this.currentMonth).daysInMonth();
     }
   }
 }
