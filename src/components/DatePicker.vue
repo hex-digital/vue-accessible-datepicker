@@ -36,9 +36,7 @@
           v-for="(day, index) in dayNamesLetters"
           :key="index"
           class="v-datepicker__weekday"
-        >
-          {{ day }}
-        </li>
+        >{{ day }}</li>
       </ul>
 
       <div class="v-datepicker__month-dates">
@@ -46,9 +44,7 @@
           v-for="(blank, index) in firstDayInMonth"
           :key="`blank-${index}`"
           class="v-datepicker__filler-date v-datepicker__month-date"
-        >
-            &nbsp;
-        </span>
+        >&nbsp;</span>
         <a
           href
           v-for="(date, index) in daysInCurrentMonth"
@@ -68,8 +64,10 @@
 </template>
 
 <script>
+/* eslint-disable */
 import moment from 'moment';
 import { dayNamesLetters } from '../helpers/date-formats';
+import { getDayInWeek, getFullDate } from '../helpers/dates';
 import {
   ESC,
   LEFT,
@@ -82,7 +80,10 @@ export default {
   name: 'DatePicker',
   data: () => ({
     dayNamesLetters,
-    focusedDateRef: null,
+    currentFocusedDate: null,
+    currentFocusedFullDate: null,
+    currentFocusedDateRef: null,
+    currentFocusedDayInWeek: null,
     firstDateOfMonth: 1,
   }),
   props: {
@@ -118,21 +119,20 @@ export default {
   watch: {
     isVisible(visible) {
       this.$nextTick(() => {
-        if (visible) {
-          const selectedElement = document.getElementById('selectedDateElement');
-          if (!selectedElement) return;
-
-          selectedElement.focus();
-          this.focusedDateRef = `date-${selectedElement.text}`;
-        }
+        if (!visible) return;
+        document.addEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
+        const selectedElement = document.getElementById('selectedDateElement');
+        if (!selectedElement) return;
+        selectedElement.focus();
       });
     },
   },
   mounted() {
-    document.addEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
+    if (!this.selectedDate) return;
+    this.updateCurrentFocusedValues({ newDate: this.selectedDate.date(), newDateRef: `date-${this.selectedDate.date()}` })
   },
   destroyed() {
-    document.removeEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
+    if (this.isVisible) document.removeEventListener('keyup', (event) => this.handleKeyPress(event.keyCode));
   },
   computed: {
     headerText() {
@@ -176,13 +176,13 @@ export default {
         this.handleLeftKeyPress();
         break;
       case UP:
-        this.handleVerticalKeyPress(UP);
+        this.handleUpKeyPress();
         break;
       case RIGHT:
         this.handleRightKeyPress();
         break;
       case DOWN:
-        this.handleVerticalKeyPress(DOWN);
+        this.handleDownKeyPress();
         break;
       default:
         break;
@@ -195,39 +195,75 @@ export default {
       if (dateInput) dateInput.focus();
     },
     handleLeftKeyPress() {
-      const focusedElement = this.$refs[this.focusedDateRef][0];
-      if (!focusedElement) return;
+      if (!this.currentFocusedDate) return;
 
-      const currentFocusedDate = parseInt(focusedElement.text);
-      const isAtBeginningOfMonth = currentFocusedDate === this.firstDateOfMonth;
+      const isAtBeginningOfMonth = this.currentFocusedDate === this.firstDateOfMonth;
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
-        const previousDateRef = `date-${isAtBeginningOfMonth ? this.daysInCurrentMonth : currentFocusedDate - 1}`;
+        const previousDate = isAtBeginningOfMonth ? this.daysInCurrentMonth : this.currentFocusedDate - 1;
+        const previousDateRef = `date-${previousDate}`;
         const previousElement = this.$refs[previousDateRef][0];
         if (!previousElement) return;
 
-        this.focusedDateRef = previousDateRef;
+        this.updateCurrentFocusedValues({ newDate: previousDate, newDateRef: previousDateRef });
         previousElement.focus();
       });
     },
     handleRightKeyPress() {
-      const focusedElement = this.$refs[this.focusedDateRef][0];
-      if (!focusedElement) return;
+      if (!this.currentFocusedDate) return;
 
-      const currentFocusedDate = parseInt(focusedElement.text);
-      const isAtEndOfMonth = currentFocusedDate === this.daysInCurrentMonth;
+      const isAtEndOfMonth = this.currentFocusedDate === this.daysInCurrentMonth;
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
-        const nextDateRef = `date-${isAtEndOfMonth ? this.firstDateOfMonth : currentFocusedDate + 1}`
+        const nextDate = isAtEndOfMonth ? this.firstDateOfMonth : this.currentFocusedDate + 1;
+        const nextDateRef = `date-${nextDate}`
         const nextElement = this.$refs[nextDateRef][0];
         if (!nextElement) return;
 
-        this.focusedDateRef = nextDateRef;
+        this.updateCurrentFocusedValues({ newDate: nextDate, newDateRef: nextDateRef });
         nextElement.focus();
       });
     },
+    handleUpKeyPress() {
+      if (!this.currentFocusedDate) return;
+
+      const isAtBeginningOfMonth = (this.currentFocusedDate - 7) < this.firstDateOfMonth;
+      if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
+
+      this.$nextTick(() => {
+        const previousWeekDate = moment(this.currentFocusedFullDate).subtract(1, 'week').date();
+        const previousDateRef = `date-${previousWeekDate}`;
+        const previousElement = this.$refs[previousDateRef][0];
+        if (!previousElement) return;
+
+        this.updateCurrentFocusedValues({ newDate: previousWeekDate, newDateRef: previousDateRef });
+        previousElement.focus();
+      });
+    },
+    handleDownKeyPress() {
+      if (!this.currentFocusedDate) return;
+
+      const isAtEndOfMonth = (this.currentFocusedDate + 7) > this.daysInCurrentMonth;
+      if (isAtEndOfMonth) this.$emit('go-to-next-month');
+
+      this.$nextTick(() => {
+        const nextWeekDate = moment(this.currentFocusedFullDate).add(1, 'week').date();
+        const nextDateRef = `date-${nextWeekDate}`;
+        const nextElement = this.$refs[nextDateRef][0];
+        if (!nextElement) return;
+
+        this.updateCurrentFocusedValues({ newDate: nextWeekDate, newDateRef: nextDateRef });
+        nextElement.focus();
+      });
+    },
+    updateCurrentFocusedValues({ newDate, newDateRef }) {
+      this.currentFocusedDate = newDate;
+      this.currentFocusedFullDate = getFullDate({ year: this.currentYear, month: this.currentMonth, date: this.currentFocusedDate });
+      this.currentFocusedDateRef = newDateRef;
+      this.currentFocusedDayInWeek = getDayInWeek({ year: this.currentYear, month: this.currentMonth, date: this.currentFocusedDate });
+    }
   }
 }
 </script>
