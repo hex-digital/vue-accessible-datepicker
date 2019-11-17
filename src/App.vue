@@ -83,9 +83,9 @@ export default {
     toggleDatePicker() {
       this.isDatePickerVisible = !this.isDatePickerVisible;
     },
-    selectDate({ date, current, input = false }) {
+    selectDate({ date, input = false }) {
       if (input && !this.selectedDateInput.length) return;
-      const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(current.year, current.month, date));
+      const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(this.current.year, this.current.month, date));
 
       this.selectedDate = newDate;
       if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
