@@ -81,7 +81,7 @@
               class="v-datepicker__day-button"
               :id="isSelected(day.date) ? 'selectedDateElement' : ''"
               :aria-label="moment([day.year, day.month, day.date]).format('dddd, Do MMMM YYYY')"
-              :ref="`date-${day.date}`"
+              :ref="getRefString(day.date)"
               :class="{
                 'v-datepicker__day-button--selected': isSelected(day.date),
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
@@ -192,6 +192,8 @@ export default {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
           const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: date - this.firstDayInMonth });
+
+          if (!weeks[week - 1]) return {weeks};
           weeks[week - 1].push({
             date: isBlankDate ? null : date - this.firstDayInMonth,
             day: isBlankDate ? null : fullDate.format('dddd'),
@@ -297,7 +299,7 @@ export default {
       this.$refs[newDateRef][0].setAttribute('tabindex', 0);
     },
     getRefString(number) {
-      return `date-${number}`;
+      return `date-${number}-${this.current.month}`;
     },
     getDateFromRef(ref) {
       return ref.split('-')[1];
@@ -326,11 +328,15 @@ export default {
     },
     navigateMonth(direction) {
       this.$emit(`go-to-${direction}-month`);
+      this.$refs[this.currentFocusedRef][0].setAttribute('tabindex', -1);
+
       this.$nextTick(() => {
         const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
         const firstElementInMonth = this.$refs[firstRefOfMonth][0];
+
         if (firstElementInMonth) {
-          this.updateTabIndex(this.getDateFromRef(this.currentFocusedRef), firstRefOfMonth);
+          this.$refs[firstRefOfMonth][0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = firstRefOfMonth;
           firstElementInMonth.focus();
         }
       })
