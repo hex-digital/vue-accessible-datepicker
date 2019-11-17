@@ -5,7 +5,9 @@
         :disabled="monthIsSameMinMonth"
         :class="{'v-datepicker__change-month-button--disabled': monthIsSameMinMonth}"
         class="v-datepicker__change-month-button"
-        aria-label="Previous month"
+        :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
+        data-handler="previous"
+        data-event="click"
         @click="$emit('go-to-previous-month')"
       >
         <img
@@ -19,7 +21,9 @@
         :disabled="monthIsSameMaxMonth"
         :class="{'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth}"
         class="v-datepicker__change-month-button"
-        aria-label="Next month"
+        :aria-label="`Next month, ${next.monthString} ${next.year}`"
+        data-handler="next"
+        data-event="click"
         @click="$emit('go-to-next-month')"
       >
         <img
@@ -42,40 +46,50 @@
         </tr>
       </thead>
 
-      <tbody class="v-datepicker__weeks">
+      <tbody
+        class="v-datepicker__weeks"
+        @keyup.left="handleKeyPress(LEFT, $event)"
+        @keyup.right="handleKeyPress(RIGHT, $event)"
+        @keyup.up="handleKeyPress(UP, $event)"
+        @keyup.down="handleKeyPress(DOWN, $event)"
+      >
         <tr
           v-for="(week, weekIndex) in calendar.weeks"
           :key="`week-${weekIndex}`"
           class="v-datepicker__week"
         >
-          <td v-for="(day, dayIndex) in week" :key="dayIndex" class="v-datepicker__day">
+          <td
+            v-for="(day, dayIndex) in week"
+            :key="dayIndex"
+            class="v-datepicker__day"
+            data-handler="selectDay"
+            data-event="click"
+            :data-day="day.date"
+            :data-month="day.month"
+            :data-year="day.year"
+          >
             <button
               v-if="day.date"
               class="v-datepicker__day-button"
-              :data-day="day.date"
-              :data-month="day.month"
-              :data-year="day.year"
+              :id="isSelected(day.date) ? 'selectedDateElement' : ''"
               :aria-label="moment([day.year, day.month, day.date]).format('dddd, Do MMMM YYYY')"
+              :ref="`date-${day.date}`"
+              :class="{
+                'v-datepicker__day-button--selected': isSelected(day.date),
+                'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
+              }"
+              :tabindex="day.focusable ? 0 : -1"
+              @click="$emit('pick-date', { date: day.date, currentMonth, currentYear })"
             >{{ day.date }}
             </button>
             <span v-else class="v-datepicker__filler-date">&nbsp;</span>
           </td>
         </tr>
-        <!-- <a
-          href
-          v-for="(date, index) in daysInCurrentMonth"
-          :id="isSelected(date) ? 'selectedDateElement' : ''"
-          :key="`date-${index}`"
-          :ref="`date-${date}`"
-          :class="{
-            'v-datepicker__month-date--selected': isSelected(date),
-            'v-datepicker__month-date--disabled': isBeforeMinDate(date) || isAfterMaxDate(date)
-          }"
-          class="v-datepicker__month-date"
-          @click.prevent="$emit('pick-date', { date, currentMonth, currentYear })"
-        >{{ date }}</a> -->
       </tbody>
     </table>
+    <div class="v-datepicker__footer">
+      <button @click="$emit('close-datepicker')" class="v-datepicker__footer-button">Close</button>
+    </div>
   </div>
 </template>
 
@@ -97,6 +111,11 @@ export default {
   data: () => ({
     dayNames,
     dayNamesLetters,
+    ESC,
+    LEFT,
+    UP,
+    RIGHT,
+    DOWN,
     currentFocusedDate: null,
     currentFocusedFullDate: null,
     currentFocusedDateRef: null,
@@ -120,18 +139,18 @@ export default {
       type: Object,
       required: true,
     },
-    currentMonth: {
-      type: Number,
+    current: {
+      type: Object,
       required: true,
     },
-    currentYear: {
-      type: Number,
+    previous: {
+      type: Object,
       required: true,
     },
-    daysInCurrentMonth: {
-      type: Number,
+    next: {
+      type: Object,
       required: true,
-    }
+    },
   },
   watch: {
     isVisible(visible) {
@@ -153,19 +172,19 @@ export default {
   },
   computed: {
     headerText() {
-      return `${moment().month(this.currentMonth).format('MMMM')} ${this.currentYear}`;
+      return `${moment().month(this.current.month).format('MMMM')} ${this.current.year}`;
     },
     firstDayInMonth() {
-      return moment([this.currentYear, this.currentMonth, 1]).weekday();
+      return moment([this.current.year, this.current.month, 1]).weekday();
     },
     monthIsSameMinMonth() {
       if (!this.minDate) return false;
-      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth));
+      const dateToCheck = moment(new Date(this.current.year, this.current.month));
       return moment(dateToCheck).isSame(this.minDate, 'month');
     },
     monthIsSameMaxMonth() {
       if (!this.maxDate) return false;
-      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth));
+      const dateToCheck = moment(new Date(this.current.year, this.current.month));
       return moment(dateToCheck).isSame(this.maxDate, 'month');
     },
     calendar() {
@@ -173,14 +192,16 @@ export default {
       let week = 1;
       const daysInWeek = 7;
 
-      for (let date = this.firstDateOfMonth; date <= (this.daysInCurrentMonth + this.firstDayInMonth); date += 1) {
+      for (let date = this.firstDateOfMonth; date <= (this.current.daysInMonth + this.firstDayInMonth); date += 1) {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
+          const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: date - this.firstDayInMonth });
           weeks[week - 1].push({
             date: isBlankDate ? null : date - this.firstDayInMonth,
-            day: isBlankDate ? null : getFullDate({ year: this.currentYear, month: this.currentMonth, date: date - this.firstDayInMonth }).format('dddd'),
-            month: isBlankDate ? null : this.currentMonth,
-            year: isBlankDate ? null : this.currentYear,
+            day: isBlankDate ? null : fullDate.format('dddd'),
+            month: isBlankDate ? null : this.current.month,
+            year: isBlankDate ? null : this.current.year,
+            focusable: this.isToday(fullDate),
           })
         }
 
@@ -192,19 +213,22 @@ export default {
   methods: {
     moment,
     isSelected(date) {
-      return moment(new Date(this.currentYear, this.currentMonth, date)).isSame(this.selectedDate, 'day');
+      return moment(new Date(this.current.year, this.current.month, date)).isSame(this.selectedDate, 'day');
     },
     isBeforeMinDate(date) {
       if (!this.minDate) return false;
-      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
+      const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
       return moment(dateToCheck).isBefore(this.minDate, 'day');
     },
     isAfterMaxDate(date) {
       if (!this.maxDate) return false;
-      const dateToCheck = moment(new Date(this.currentYear, this.currentMonth, date));
+      const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
       return moment(dateToCheck).isAfter(this.maxDate, 'day');
     },
-    handleKeyPress(keyCode) {
+    isToday(date) {
+      return moment().isSame(date, 'day')
+    },
+    handleKeyPress(keyCode, event) {
       switch (keyCode) {
       case ESC:
         this.handleEscapeKeyPress();
@@ -238,9 +262,11 @@ export default {
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
-        const previousDate = isAtBeginningOfMonth ? this.daysInCurrentMonth : this.currentFocusedDate - 1;
+        const previousDate = isAtBeginningOfMonth ? this.current.daysInMonth : this.currentFocusedDate - 1;
         const previousDateRef = `date-${previousDate}`;
         const previousElement = this.$refs[previousDateRef][0];
+        this.$refs[`date-${this.currentFocusedDate}`].setAttribute('tabindex', -1);
+        this.$refs[previousDateRef].setAttribute('tabindex', 0);
         if (!previousElement) return;
 
         this.updateCurrentFocusedValues({ newDate: previousDate, newDateRef: previousDateRef });
@@ -250,7 +276,7 @@ export default {
     handleRightKeyPress() {
       if (!this.currentFocusedDate) return;
 
-      const isAtEndOfMonth = this.currentFocusedDate === this.daysInCurrentMonth;
+      const isAtEndOfMonth = this.currentFocusedDate === this.current.daysInMonth;
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
@@ -282,7 +308,7 @@ export default {
     handleDownKeyPress() {
       if (!this.currentFocusedDate) return;
 
-      const isAtEndOfMonth = (this.currentFocusedDate + 7) > this.daysInCurrentMonth;
+      const isAtEndOfMonth = (this.currentFocusedDate + 7) > this.current.daysInMonth;
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
@@ -297,9 +323,9 @@ export default {
     },
     updateCurrentFocusedValues({ newDate, newDateRef }) {
       this.currentFocusedDate = newDate;
-      this.currentFocusedFullDate = getFullDate({ year: this.currentYear, month: this.currentMonth, date: this.currentFocusedDate });
+      this.currentFocusedFullDate = getFullDate({ year: this.current.year, month: this.current.month, date: this.currentFocusedDate });
       this.currentFocusedDateRef = newDateRef;
-      this.currentFocusedDayInWeek = getDayInWeek({ year: this.currentYear, month: this.currentMonth, date: this.currentFocusedDate });
+      this.currentFocusedDayInWeek = getDayInWeek({ year: this.current.year, month: this.current.month, date: this.currentFocusedDate });
     }
   }
 }
@@ -330,7 +356,7 @@ $light-grey: #dbdbdb;
   }
 
   &__content {
-    padding: 0.5em 0.5em;
+    padding: 0.5em 0.5em 0 0.5em;
     width: 100%;
   }
 
@@ -376,6 +402,25 @@ $light-grey: #dbdbdb;
       pointer-events: none;
     };
 
+  }
+
+  &__footer {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 1em 0.5em 1em;
+
+    &-button {
+      background: none;
+      border: 1px solid $light-grey;
+      cursor: pointer;
+      height: 3em;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 0.5;
+      }
+    }
   }
 
 }
