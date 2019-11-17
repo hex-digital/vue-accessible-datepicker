@@ -26,7 +26,7 @@
       </div>
 
       <date-picker
-        :is-visible="isDatePickerVisible"
+        v-if="isDatePickerVisible"
         :selected-date="selectedDate"
         :current="current"
         :next="next"

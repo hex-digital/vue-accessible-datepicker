@@ -1,6 +1,5 @@
 <template>
   <div
-    v-if="isVisible"
     class="v-datepicker__picker"
     role="application"
     aria-label="Calendar view date-picker"
@@ -13,6 +12,8 @@
         :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
         data-handler="previous"
         data-event="click"
+        @keyup.enter="navigateMonth('previous')"
+        @keyup.space="navigateMonth('previous')"
         @click="$emit('go-to-previous-month')"
       >
         <img
@@ -29,6 +30,8 @@
         :aria-label="`Next month, ${next.monthString} ${next.year}`"
         data-handler="next"
         data-event="click"
+        @keyup.enter="navigateMonth('next')"
+        @keyup.space="navigateMonth('next')"
         @click="$emit('go-to-next-month')"
       >
         <img
@@ -98,10 +101,9 @@
 </template>
 
 <script>
-/* eslint-disable */
 import moment from 'moment';
 import { dayNames, dayNamesLetters } from '../helpers/date-formats';
-import { getDayInWeek, getFullDate } from '../helpers/dates';
+import { getFullDate } from '../helpers/dates';
 import {
   ESC,
   LEFT,
@@ -121,6 +123,7 @@ export default {
     RIGHT,
     DOWN,
     firstDateOfMonth: 1,
+    currentFocusedRef: null,
   }),
   props: {
     isVisible: {
@@ -152,14 +155,16 @@ export default {
       required: true,
     },
   },
-  watch: {
-    isVisible(visible) {
-      this.$nextTick(() => {
-        if (!visible) return;
-        const selectedElement = document.getElementById('selectedDateElement');
-        if (selectedElement) selectedElement.focus();
-      });
-    },
+  mounted() {
+    const selectedElement = document.getElementById('selectedDateElement');
+    document.addEventListener('keydown', (event) => this.handleKeyPress(event));
+    if (selectedElement) {
+      this.currentFocusedRef = this.getRefString(selectedElement.innerText);
+      selectedElement.focus();
+    }
+  },
+  destroyed() {
+    document.removeEventListener('keydown', (event) => this.handleKeyPress(event));
   },
   computed: {
     headerText() {
@@ -236,6 +241,7 @@ export default {
         const previousElement = this.$refs[previousDateRef][0];
         if (!previousElement) return;
         this.updateTabIndex(currentFocusedDate, previousDateRef);
+        this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement.focus();
       });
     },
@@ -250,6 +256,7 @@ export default {
         const nextElement = this.$refs[nextDateRef][0];
         if (!nextElement) return;
         this.updateTabIndex(currentFocusedDate, nextDateRef);
+        this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement.focus();
       });
     },
@@ -265,6 +272,7 @@ export default {
         const previousElement = this.$refs[previousDateRef][0];
         if (!previousElement) return;
         this.updateTabIndex(currentFocusedDate, previousDateRef);
+        this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement.focus();
       });
     },
@@ -280,6 +288,7 @@ export default {
         const nextElement = this.$refs[nextDateRef][0];
         if (!nextElement) return;
         this.updateTabIndex(currentFocusedDate, nextDateRef);
+        this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement.focus();
       });
     },
@@ -289,6 +298,42 @@ export default {
     },
     getRefString(number) {
       return `date-${number}`;
+    },
+    getDateFromRef(ref) {
+      return ref.split('-')[1];
+    },
+    handleKeyPress(event) {
+      if (event.keyCode !== 9) return; // Don't do anything if it is not a tab key press.
+
+      // Create a focus trap when the datepicker is open.
+      const focusableElements = document.querySelectorAll(
+        '.v-datepicker__change-month-button:not([disabled]), .v-datepicker__day-button:not([tabindex="-1"]), .v-datepicker__footer-button',
+      );
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey) { // If shift key is pressed, go backwards.
+        if (event.target === firstFocusableElement) {
+          event.preventDefault();
+          lastFocusableElement.focus();
+        }
+      } else { // Otherwise go forwards.
+        if (event.target === lastFocusableElement) {
+          event.preventDefault();
+          firstFocusableElement.focus();
+        }
+      }
+    },
+    navigateMonth(direction) {
+      this.$emit(`go-to-${direction}-month`);
+      this.$nextTick(() => {
+        const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
+        const firstElementInMonth = this.$refs[firstRefOfMonth][0];
+        if (firstElementInMonth) {
+          this.updateTabIndex(this.getDateFromRef(this.currentFocusedRef), firstRefOfMonth);
+          firstElementInMonth.focus();
+        }
+      })
     }
   }
 }
@@ -301,7 +346,6 @@ $light-grey: #dbdbdb;
   &__picker {
     background-color: white;
     border: 1px solid $light-grey;
-    color: black;
     font-family: Arial, Helvetica, sans-serif;
 
     @media only screen and (min-width: 40em) {
