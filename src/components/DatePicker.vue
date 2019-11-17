@@ -30,22 +30,38 @@
       </button>
     </div>
 
-    <div class="v-datepicker__content">
-      <ul class="v-datepicker__weekdays">
-        <li
-          v-for="(day, index) in dayNamesLetters"
-          :key="index"
-          class="v-datepicker__weekday"
-        >{{ day }}</li>
-      </ul>
+    <table class="v-datepicker__content">
+      <thead class="v-datepicker__weekdays-wrapper">
+        <tr class="v-datepicker__weekdays-row">
+          <th
+            scope="col"
+            v-for="(day, index) in dayNamesLetters"
+            :key="index"
+            class="v-datepicker__weekday"
+          ><span :title="dayNames[index]">{{ day }}</span></th>
+        </tr>
+      </thead>
 
-      <div class="v-datepicker__month-dates">
-        <span
-          v-for="(blank, index) in firstDayInMonth"
-          :key="`blank-${index}`"
-          class="v-datepicker__filler-date v-datepicker__month-date"
-        >&nbsp;</span>
-        <a
+      <tbody class="v-datepicker__weeks">
+        <tr
+          v-for="(week, weekIndex) in calendar.weeks"
+          :key="`week-${weekIndex}`"
+          class="v-datepicker__week"
+        >
+          <td v-for="(day, dayIndex) in week" :key="dayIndex" class="v-datepicker__day">
+            <button
+              v-if="day.date"
+              class="v-datepicker__day-button"
+              :data-day="day.date"
+              :data-month="day.month"
+              :data-year="day.year"
+              :aria-label="moment([day.year, day.month, day.date]).format('dddd, Do MMMM YYYY')"
+            >{{ day.date }}
+            </button>
+            <span v-else class="v-datepicker__filler-date">&nbsp;</span>
+          </td>
+        </tr>
+        <!-- <a
           href
           v-for="(date, index) in daysInCurrentMonth"
           :id="isSelected(date) ? 'selectedDateElement' : ''"
@@ -57,16 +73,16 @@
           }"
           class="v-datepicker__month-date"
           @click.prevent="$emit('pick-date', { date, currentMonth, currentYear })"
-        >{{ date }}</a>
-      </div>
-    </div>
+        >{{ date }}</a> -->
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
 /* eslint-disable */
 import moment from 'moment';
-import { dayNamesLetters } from '../helpers/date-formats';
+import { dayNames, dayNamesLetters } from '../helpers/date-formats';
 import { getDayInWeek, getFullDate } from '../helpers/dates';
 import {
   ESC,
@@ -79,6 +95,7 @@ import {
 export default {
   name: 'DatePicker',
   data: () => ({
+    dayNames,
     dayNamesLetters,
     currentFocusedDate: null,
     currentFocusedFullDate: null,
@@ -150,6 +167,26 @@ export default {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.currentYear, this.currentMonth));
       return moment(dateToCheck).isSame(this.maxDate, 'month');
+    },
+    calendar() {
+      const weeks = [[], [], [], [], []];
+      let week = 1;
+      const daysInWeek = 7;
+
+      for (let date = this.firstDateOfMonth; date <= (this.daysInCurrentMonth + this.firstDayInMonth); date += 1) {
+        if (date <= (week * daysInWeek)) {
+          const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
+          weeks[week - 1].push({
+            date: isBlankDate ? null : date - this.firstDayInMonth,
+            day: isBlankDate ? null : getFullDate({ year: this.currentYear, month: this.currentMonth, date: date - this.firstDayInMonth }).format('dddd'),
+            month: isBlankDate ? null : this.currentMonth,
+            year: isBlankDate ? null : this.currentYear,
+          })
+        }
+
+        if (date === (week * daysInWeek)) week += 1; // If at end of week go to next week.
+      }
+      return {weeks};
     },
   },
   methods: {
@@ -294,6 +331,7 @@ $light-grey: #dbdbdb;
 
   &__content {
     padding: 0.5em 0.5em;
+    width: 100%;
   }
 
   &__change-month-button {
@@ -313,34 +351,16 @@ $light-grey: #dbdbdb;
 
   }
 
-  &__weekdays,
-  &__month-dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    margin: 0;
-    padding: 0;
-  }
-
-  &__weekdays {
-    color: black;
-    font-weight: bold;
-    margin-bottom: 1em;
-  }
-
-  &__weekday,
-  &__month-date {
-    list-style-type: none;
-    margin: 0;
-    text-align: center;
-  }
-
-  &__month-date {
-    color: black;
+  &__day-button {
+    background: none;
+    border: none;
+    cursor: pointer;
     padding: 0.75em;
     text-decoration: none;
     transition-property: background-color, color;
     transition-timing-function: ease;
     transition-duration: 0.3s;
+    width: 100%;
 
     &:hover:not(.v-datepicker__filler-date) {
       background-color: $light-grey;
