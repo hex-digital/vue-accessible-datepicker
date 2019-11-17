@@ -16,17 +16,21 @@
           v-model="selectedDateInput"
           @blur="selectDate({ input: true })"
         >
-        <button @click="toggleDatePicker" class="v-datepicker__toggle-button">
-          <img src="./assets/calendar.svg" alt="calendar icon" class="v-datepicker__toggle-button-icon">
+        <button @click="toggleDatePicker" class="v-datepicker__toggle-button" aria-describedby="datepickerLabel">
+          <img
+            src="./assets/calendar.svg"
+            alt="calendar icon"
+            class="v-datepicker__toggle-button-icon"
+          >
         </button>
       </div>
 
       <date-picker
         :is-visible="isDatePickerVisible"
         :selected-date="selectedDate"
-        :current-year="currentYear"
-        :current-month="currentMonth"
-        :days-in-current-month="daysInCurrentMonth"
+        :current="current"
+        :next="next"
+        :previous="previous"
         :min-date="minDate"
         :max-date="maxDate"
         v-on-clickaway="toggleDatePicker"
@@ -45,18 +49,24 @@ import DatePicker from './components/DatePicker';
 
 export default {
   name: 'app',
-  components: {
-    DatePicker,
-  },
-  directives: {
-    onClickaway: onClickaway,
-  },
+  components: { DatePicker },
+  directives: { onClickaway: onClickaway },
   data: () => ({
     isDatePickerVisible: false,
     selectedDate: moment(new Date()),
-    daysInCurrentMonth: moment().daysInMonth(),
-    currentMonth: moment().get('month'),
-    currentYear: moment().get('year'),
+    current: {
+      month: moment().get('month'),
+      year: moment().get('year'),
+      daysInMonth: moment().daysInMonth(),
+    },
+    previous: {
+      monthString: moment().subtract(1, 'month').format('MMMM'),
+      year: moment().subtract(1, 'month').get('year'),
+    },
+    next: {
+      monthString: moment().add(1, 'month').format('MMMM'),
+      year: moment().add(1, 'month').get('year'),
+    },
     selectedDateInput: '',
   }),
   props: {
@@ -73,14 +83,9 @@ export default {
     toggleDatePicker() {
       this.isDatePickerVisible = !this.isDatePickerVisible;
     },
-    selectDate({
-      date,
-      currentYear = this.currentYear,
-      currentMonth = this.currentMonth,
-      input = false,
-    }) {
+    selectDate({ date, input = false }) {
       if (input && !this.selectedDateInput.length) return;
-      const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(currentYear, currentMonth, date));
+      const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(this.current.year, this.current.month, date));
 
       this.selectedDate = newDate;
       if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
@@ -90,30 +95,30 @@ export default {
       this.isDatePickerVisible = false;
     },
     goToPreviousMonth() {
-      if (this.currentMonth === 0) {
-        this.currentMonth = 11;
-        this.currentYear = this.currentYear - 1;
+      if (this.current.month === 0) {
+        this.current.month = 11;
+        this.current.year = this.current.year - 1;
       } else {
-        this.currentMonth = this.currentMonth - 1;
+        this.current.month = this.current.month - 1;
       }
       this.updateDaysInMonth();
     },
     goToNextMonth() {
-      const nextMonth = this.currentMonth + 1;
+      const nextMonth = this.current.month + 1;
       if (nextMonth > 11) {
-        this.currentMonth = 0;
-        this.currentYear = this.currentYear + 1;
+        this.current.month = 0;
+        this.current.year = this.current.year + 1;
       } else {
-        this.currentMonth = nextMonth;
+        this.current.month = nextMonth;
       }
       this.updateDaysInMonth();
     },
     updateCurrentDates({ year, month }) {
-        this.currentYear = year;
-        this.currentMonth = month;
+        this.current.year = year;
+        this.current.month = month;
     },
     updateDaysInMonth() {
-      this.daysInCurrentMonth = moment().month(this.currentMonth).daysInMonth();
+      this.current.daysInMonth = moment().month(this.current.month).daysInMonth();
     }
   }
 }
