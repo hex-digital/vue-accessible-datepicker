@@ -18,7 +18,8 @@
         @click.prevent="navigateMonth('previous')"
       >
         <img
-          src="../assets/back-arrow.svg"
+          :src="navigateMonthIcons && navigateMonthIcons.previous
+            ? navigateMonthIcons.previous : defaultBackArrowIcon"
           alt="back arrow"
           width="18"
         >
@@ -37,7 +38,8 @@
         @click.prevent="navigateMonth('next')"
       >
         <img
-          src="../assets/next-arrow.svg"
+          :src="navigateMonthIcons && navigateMonthIcons.next
+            ? navigateMonthIcons.next : defaultNextArrowIcon"
           alt="next arrow"
           width="18"
         >
@@ -105,6 +107,8 @@
 
 <script>
 import moment from 'moment';
+import defaultNextArrowIcon from '../assets/next-arrow.svg'
+import defaultBackArrowIcon from '../assets/back-arrow.svg'
 import { dayNames, dayNamesLetters } from '../helpers/date-formats';
 import { getFullDate } from '../helpers/dates';
 import {
@@ -118,6 +122,8 @@ import {
 export default {
   name: 'DatePicker',
   data: () => ({
+    defaultNextArrowIcon,
+    defaultBackArrowIcon,
     dayNames,
     dayNamesLetters,
     ESC,
@@ -132,6 +138,10 @@ export default {
     isVisible: {
       type: Boolean,
       default: false,
+    },
+    navigateMonthIcons: {
+      type: Object,
+      default: null,
     },
     minDate: {
       type: Object,
