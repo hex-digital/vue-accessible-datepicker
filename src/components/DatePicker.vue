@@ -5,41 +5,43 @@
     aria-label="Calendar view date-picker"
   >
     <div class="v-datepicker__header">
-      <button
+      <a
+        href
+        role="button"
         :disabled="monthIsSameMinMonth"
         :class="{'v-datepicker__change-month-button--disabled': monthIsSameMinMonth}"
-        class="v-datepicker__change-month-button"
         :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
+        class="v-datepicker__change-month-button"
         data-handler="previous"
         data-event="click"
-        @keyup.enter="navigateMonth('previous')"
-        @keyup.space="navigateMonth('previous')"
-        @click="$emit('go-to-previous-month')"
+        @keyup.space.capture="navigateMonth('previous')"
+        @click.prevent="navigateMonth('previous')"
       >
         <img
           src="../assets/back-arrow.svg"
           alt="back arrow"
           width="18"
         >
-      </button>
+      </a>
       <p>{{ headerText }}</p>
-      <button
+      <a
+        href
+        role="button"
         :disabled="monthIsSameMaxMonth"
         :class="{'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth}"
-        class="v-datepicker__change-month-button"
         :aria-label="`Next month, ${next.monthString} ${next.year}`"
+        class="v-datepicker__change-month-button"
         data-handler="next"
         data-event="click"
-        @keyup.enter="navigateMonth('next')"
-        @keyup.space="navigateMonth('next')"
-        @click="$emit('go-to-next-month')"
+        @keyup.space.capture="navigateMonth('next')"
+        @click.prevent="navigateMonth('next')"
       >
         <img
           src="../assets/next-arrow.svg"
           alt="next arrow"
           width="18"
         >
-      </button>
+      </a>
     </div>
 
     <table class="v-datepicker__content">
@@ -56,6 +58,7 @@
 
       <tbody
         class="v-datepicker__weeks"
+        @keyup.esc="handleEscapeKeyPress"
         @keyup.left="handleLeftKeyPress($event)"
         @keyup.right="handleRightKeyPress($event)"
         @keyup.up="handleUpKeyPress($event)"
@@ -73,7 +76,7 @@
             data-handler="selectDay"
             data-event="click"
             :data-day="day.date"
-            :data-month="day.month"
+            :data-month="day.month + 1"
             :data-year="day.year"
           >
             <button
@@ -81,7 +84,7 @@
               class="v-datepicker__day-button"
               :id="isSelected(day.date) ? 'selectedDateElement' : ''"
               :aria-label="moment([day.year, day.month, day.date]).format('dddd, Do MMMM YYYY')"
-              :ref="`date-${day.date}`"
+              :ref="day.ref"
               :class="{
                 'v-datepicker__day-button--selected': isSelected(day.date),
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
@@ -140,7 +143,7 @@ export default {
     },
     selectedDate: {
       type: Object,
-      required: true,
+      default: null,
     },
     current: {
       type: Object,
@@ -156,12 +159,16 @@ export default {
     },
   },
   mounted() {
-    const selectedElement = document.getElementById('selectedDateElement');
-    document.addEventListener('keydown', (event) => this.handleKeyPress(event));
-    if (selectedElement) {
-      this.currentFocusedRef = this.getRefString(selectedElement.innerText);
-      selectedElement.focus();
-    }
+    this.$nextTick(() => {
+      const selectedElement = document.getElementById('selectedDateElement');
+      const firstOfMonthRef = this.getRefString(this.firstDateOfMonth);
+      const firstDateOfMonthElement = this.$refs[firstOfMonthRef];
+      document.addEventListener('keydown', (event) => this.handleKeyPress(event));
+      if (selectedElement || firstDateOfMonthElement) {
+        this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : firstOfMonthRef;
+        selectedElement ? selectedElement.focus() : firstDateOfMonthElement[0].focus();
+      }
+    });
   },
   destroyed() {
     document.removeEventListener('keydown', (event) => this.handleKeyPress(event));
@@ -191,13 +198,17 @@ export default {
       for (let date = this.firstDateOfMonth; date <= (this.current.daysInMonth + this.firstDayInMonth); date += 1) {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
-          const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: date - this.firstDayInMonth });
+          const correctDate = date - this.firstDayInMonth;
+          const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: correctDate });
+
+          if (!weeks[week - 1]) return {weeks};
           weeks[week - 1].push({
-            date: isBlankDate ? null : date - this.firstDayInMonth,
+            date: isBlankDate ? null : correctDate,
+            ref: this.getRefString(correctDate),
             day: isBlankDate ? null : fullDate.format('dddd'),
             month: isBlankDate ? null : this.current.month,
             year: isBlankDate ? null : this.current.year,
-            focusable: this.isToday(fullDate),
+            focusable: (correctDate) === this.firstDateOfMonth,
           })
         }
 
@@ -225,7 +236,6 @@ export default {
       return moment().isSame(date, 'day')
     },
     handleEscapeKeyPress() {
-      if (!this.isVisible) return;
       this.$emit('close-datepicker');
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
@@ -238,11 +248,11 @@ export default {
       this.$nextTick(() => {
         const previousDate = isAtBeginningOfMonth ? this.current.daysInMonth : (currentFocusedDate - 1);
         const previousDateRef = this.getRefString(previousDate);
-        const previousElement = this.$refs[previousDateRef][0];
-        if (!previousElement) return;
+        const previousElement = this.$refs[previousDateRef];
+        if (!previousElement || !previousElement.length) return;
         this.updateTabIndex(currentFocusedDate, previousDateRef);
         this.currentFocusedRef = this.getRefString(previousDateRef);
-        previousElement.focus();
+        previousElement[0].focus();
       });
     },
     handleRightKeyPress(event) {
@@ -253,11 +263,11 @@ export default {
       this.$nextTick(() => {
         const nextDate = isAtEndOfMonth ? this.firstDateOfMonth : (currentFocusedDate + 1);
         const nextDateRef = this.getRefString(nextDate);
-        const nextElement = this.$refs[nextDateRef][0];
-        if (!nextElement) return;
+        const nextElement = this.$refs[nextDateRef];
+        if (!nextElement || !nextElement.length) return;
         this.updateTabIndex(currentFocusedDate, nextDateRef);
         this.currentFocusedRef = this.getRefString(nextDateRef);
-        nextElement.focus();
+        nextElement[0].focus();
       });
     },
     handleUpKeyPress(event) {
@@ -269,11 +279,11 @@ export default {
 
       this.$nextTick(() => {
         const previousDateRef = this.getRefString(previousWeekDate);
-        const previousElement = this.$refs[previousDateRef][0];
-        if (!previousElement) return;
+        const previousElement = this.$refs[previousDateRef];
+        if (!previousElement || !previousElement.length) return;
         this.updateTabIndex(currentFocusedDate, previousDateRef);
         this.currentFocusedRef = this.getRefString(previousDateRef);
-        previousElement.focus();
+        previousElement[0].focus();
       });
     },
     handleDownKeyPress(event) {
@@ -285,11 +295,11 @@ export default {
 
       this.$nextTick(() => {
         const nextDateRef = this.getRefString(nextWeekDate);
-        const nextElement = this.$refs[nextDateRef][0];
-        if (!nextElement) return;
+        const nextElement = this.$refs[nextDateRef];
+        if (!nextElement || !nextElement.length) return;
         this.updateTabIndex(currentFocusedDate, nextDateRef);
         this.currentFocusedRef = this.getRefString(nextDateRef);
-        nextElement.focus();
+        nextElement[0].focus();
       });
     },
     updateTabIndex(currentFocusedDate, newDateRef) {
@@ -326,16 +336,29 @@ export default {
     },
     navigateMonth(direction) {
       this.$emit(`go-to-${direction}-month`);
+
       this.$nextTick(() => {
         const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
-        const firstElementInMonth = this.$refs[firstRefOfMonth][0];
-        if (firstElementInMonth) {
-          this.updateTabIndex(this.getDateFromRef(this.currentFocusedRef), firstRefOfMonth);
-          firstElementInMonth.focus();
+        const firstElementInMonth = this.$refs[firstRefOfMonth];
+
+        this.removeFocusFromButtons();
+
+        if (firstElementInMonth && firstElementInMonth.length) {
+          firstElementInMonth[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = firstRefOfMonth;
+          firstElementInMonth[0].focus();
         }
       })
+    },
+    removeFocusFromButtons() {
+      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"');
+      if (focusableButtons && focusableButtons.length) {
+        focusableButtons.forEach((button) => {
+          if (button.innerText !== "1") button.setAttribute('tabindex', -1);
+        })
+      }
     }
-  }
+  },
 }
 </script>
 
@@ -373,9 +396,7 @@ $light-grey: #dbdbdb;
   }
 
   &__change-month-button {
-    background: none;
-    border: none;
-    cursor: pointer;
+    display: flex;
     transition: opacity 0.3s ease;
 
     &:hover {

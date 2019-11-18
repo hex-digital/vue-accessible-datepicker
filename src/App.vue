@@ -53,9 +53,9 @@ export default {
   directives: { onClickaway: onClickaway },
   data: () => ({
     isDatePickerVisible: false,
-    selectedDate: moment(new Date()),
+    selectedDate: null,
     current: {
-      month: moment().get('month'),
+      month: moment().get('month'), // Months are 0 indexed.
       year: moment().get('year'),
       daysInMonth: moment().daysInMonth(),
     },
