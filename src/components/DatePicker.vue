@@ -14,8 +14,8 @@
         class="v-datepicker__change-month-button"
         data-handler="previous"
         data-event="click"
-        @keyup.space.capture="navigateMonth('previous', 'space')"
-        @click.prevent="navigateMonth('previous', 'click')"
+        @keyup.space.capture="navigateMonth('previous')"
+        @click.prevent="navigateMonth('previous')"
       >
         <img
           src="../assets/back-arrow.svg"
@@ -33,8 +33,8 @@
         class="v-datepicker__change-month-button"
         data-handler="next"
         data-event="click"
-        @keyup.space.capture="navigateMonth('next', 'space')"
-        @click.prevent="navigateMonth('next', 'click')"
+        @keyup.space.capture="navigateMonth('next')"
+        @click.prevent="navigateMonth('next')"
       >
         <img
           src="../assets/next-arrow.svg"
