@@ -4,9 +4,7 @@
         id="datepickerLabel"
         for="datepicker"
         class="v-datepicker__input-label"
-      >
-        Date (mm/dd/yyyy):
-      </label>
+      >Date (mm/dd/yyyy):</label>
 
       <div class="v-datepicker__input-wrapper">
         <input
@@ -16,9 +14,13 @@
           v-model="selectedDateInput"
           @blur="selectDate({ input: true })"
         >
-        <button @click="toggleDatePicker" class="v-datepicker__toggle-button" aria-describedby="datepickerLabel">
+        <button
+          class="v-datepicker__toggle-button"
+          aria-describedby="datepickerLabel"
+          @click="toggleDatePicker"
+        >
           <img
-            src="./assets/calendar.svg"
+            :src="calendarIcon || defaultCalendarIcon"
             alt="calendar icon"
             class="v-datepicker__toggle-button-icon"
           >
@@ -33,6 +35,7 @@
         :previous="previous"
         :min-date="minDate"
         :max-date="maxDate"
+        :navigate-month-icons="navigateMonthIcons"
         v-on-clickaway="toggleDatePicker"
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
@@ -44,6 +47,7 @@
 
 <script>
 import moment from 'moment';
+import defaultCalendarIcon from './assets/calendar.svg'
 import { directive as onClickaway } from 'vue-clickaway';
 import DatePicker from './components/DatePicker';
 
@@ -52,6 +56,7 @@ export default {
   components: { DatePicker },
   directives: { onClickaway: onClickaway },
   data: () => ({
+    defaultCalendarIcon,
     isDatePickerVisible: false,
     selectedDate: null,
     current: {
@@ -70,6 +75,14 @@ export default {
     selectedDateInput: '',
   }),
   props: {
+    calendarIcon: {
+      type: String,
+      default: null,
+    },
+    navigateMonthIcons: {
+      type: Object,
+      default: null,
+    },
     minDate: {
       type: Object,
       default: null,
