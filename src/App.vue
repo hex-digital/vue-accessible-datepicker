@@ -18,7 +18,7 @@
           class="v-datepicker__toggle-button"
           aria-describedby="datepickerLabel"
           aria-label="Open the calendar"
-          @click="toggleDatePicker"
+          @click="toggleDatePicker(!isDatePickerVisible)"
         >
           <img
             :src="calendarIcon || defaultCalendarIcon"
@@ -38,11 +38,10 @@
         :min-date="minDate"
         :max-date="maxDate"
         :navigate-month-icons="navigateMonthIcons"
-        v-on-clickaway="toggleDatePicker"
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
-        @close-datepicker="toggleDatePicker"
+        @close-datepicker="toggleDatePicker(false)"
       />
   </div>
 </template>
@@ -50,13 +49,11 @@
 <script>
 import moment from 'moment';
 import defaultCalendarIcon from './assets/calendar.svg'
-import { directive as onClickaway } from 'vue-clickaway';
 import DatePicker from './components/DatePicker';
 
 export default {
   name: 'app',
   components: { DatePicker },
-  directives: { onClickaway: onClickaway },
   data: () => ({
     defaultCalendarIcon,
     isDatePickerVisible: false,
@@ -95,8 +92,8 @@ export default {
     }
   },
   methods: {
-    toggleDatePicker() {
-      this.isDatePickerVisible = !this.isDatePickerVisible;
+    toggleDatePicker(isVisible) {
+      this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
         const input = document.getElementById('datepicker');
         if (input) input.focus();
@@ -110,11 +107,10 @@ export default {
       );
 
       this.selectedDate = newDate;
-      if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY'); // If date was not selected via the input then set the value.
-
+      // If date was not selected via the input then set the value.
+      if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
       if (input) this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
-
-      this.toggleDatePicker();
+      if (!input) this.toggleDatePicker(false);
     },
     goToPreviousMonth() {
       if (this.current.month === 0) {
