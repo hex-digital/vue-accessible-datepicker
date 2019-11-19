@@ -100,7 +100,11 @@
       </tbody>
     </table>
     <div class="v-datepicker__footer">
-      <button @click="$emit('close-datepicker')" class="v-datepicker__footer-button">Close</button>
+      <button
+        class="v-datepicker__footer-button"
+        aria-label="Close the datepicker"
+        @click="$emit('close-datepicker')"
+      >Close</button>
     </div>
   </div>
 </template>
@@ -111,13 +115,6 @@ import defaultNextArrowIcon from '../assets/next-arrow.svg'
 import defaultBackArrowIcon from '../assets/back-arrow.svg'
 import { dayNames, dayNamesLetters } from '../helpers/date-formats';
 import { getFullDate } from '../helpers/dates';
-import {
-  ESC,
-  LEFT,
-  UP,
-  RIGHT,
-  DOWN,
-} from '../constants/ascii-keys';
 
 export default {
   name: 'DatePicker',
@@ -126,11 +123,6 @@ export default {
     defaultBackArrowIcon,
     dayNames,
     dayNamesLetters,
-    ESC,
-    LEFT,
-    UP,
-    RIGHT,
-    DOWN,
     firstDateOfMonth: 1,
     currentFocusedRef: null,
   }),
@@ -139,14 +131,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    // Arrow icons to navigate through the months.
     navigateMonthIcons: {
       type: Object,
       default: null,
     },
+    // All dates before minDate are disabled.
     minDate: {
       type: Object,
       default: null,
     },
+    // All dates after maxDate are disabled.
     maxDate: {
       type: Object,
       default: null,
@@ -170,9 +165,11 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
+      // Get the first element to focus on when mounted. Either the selected date, or first date of the month.
       const selectedElement = document.getElementById('selectedDateElement');
       const firstOfMonthRef = this.getRefString(this.firstDateOfMonth);
       const firstDateOfMonthElement = this.$refs[firstOfMonthRef];
+
       document.addEventListener('keydown', (event) => this.handleKeyPress(event));
       if (selectedElement || firstDateOfMonthElement) {
         this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : firstOfMonthRef;
@@ -190,29 +187,44 @@ export default {
     firstDayInMonth() {
       return moment([this.current.year, this.current.month, 1]).weekday();
     },
+    /**
+     * @returns {boolean} true if the current (visible) month is the same as the minDate month
+     */
     monthIsSameMinMonth() {
       if (!this.minDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month));
       return moment(dateToCheck).isSame(this.minDate, 'month');
     },
+    /**
+     * @returns {boolean} true if the current (visible) month is the same as the maxDate month
+     */
     monthIsSameMaxMonth() {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month));
       return moment(dateToCheck).isSame(this.maxDate, 'month');
     },
+    /**
+     * Set up the calendar dates.
+     * @returns {{ weeks: Array }}
+     */
     calendar() {
       const weeks = [[], [], [], [], []];
       let week = 1;
       const daysInWeek = 7;
+      /**
+       * To layout day 1 on the correct weekday in the calendar,
+       * get the first weekday in the month and add to the number of days in the month.
+       */
+      const offsetTotalDates = this.current.daysInMonth + this.firstDayInMonth;
 
-      for (let date = this.firstDateOfMonth; date <= (this.current.daysInMonth + this.firstDayInMonth); date += 1) {
+      for (let date = this.firstDateOfMonth; date <= offsetTotalDates; date += 1) {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
-          const correctDate = date - this.firstDayInMonth;
+          const correctDate = date - this.firstDayInMonth; // Remove the offset added at the start.
           const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: correctDate });
 
           if (!weeks[week - 1]) return {weeks};
-          weeks[week - 1].push({
+          weeks[week - 1].push({ // Add the date to the correct week in the weeks array.
             date: isBlankDate ? null : correctDate,
             ref: this.getRefString(correctDate),
             day: isBlankDate ? null : fullDate.format('dddd'),
@@ -229,58 +241,86 @@ export default {
   },
   methods: {
     moment,
+    /**
+     * @param {Number} date
+     * @returns {Boolean} true if the selectedDate is the same as the date passed in.
+     */
     isSelected(date) {
       return moment(new Date(this.current.year, this.current.month, date)).isSame(this.selectedDate, 'day');
     },
+    /**
+     * Used to disable all dates before the minDate.
+     * @param {Number} date
+     * @returns {Boolean} true if the date passed in is before the minDate prop.
+     */
     isBeforeMinDate(date) {
       if (!this.minDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
       return moment(dateToCheck).isBefore(this.minDate, 'day');
     },
+    /**
+     * Used to disable all dates after the maxDate.
+     * @param {Number} date
+     * @returns {Boolean} true if the date passed in is after the maxDate prop.
+     */
     isAfterMaxDate(date) {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
       return moment(dateToCheck).isAfter(this.maxDate, 'day');
     },
+    /**
+     * @param {Number} date
+     * @returns {Boolean} true if the date passed is today.
+     */
     isToday(date) {
-      return moment().isSame(date, 'day')
+      return moment().isSame(date, 'day');
     },
+    /**
+     * Pressing the escape key closes the datepicker and moves focus to the input field.
+     */
     handleEscapeKeyPress() {
       this.$emit('close-datepicker');
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
     },
     handleLeftKeyPress(event) {
+      // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtBeginningOfMonth = currentFocusedDate === this.firstDateOfMonth;
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
+        // If at the beginning of the month, go to the previous month and focus on the last day of the previous month.
         const previousDate = isAtBeginningOfMonth ? this.current.daysInMonth : (currentFocusedDate - 1);
         const previousDateRef = this.getRefString(previousDate);
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
+
         this.updateTabIndex(currentFocusedDate, previousDateRef);
         this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement[0].focus();
       });
     },
     handleRightKeyPress(event) {
+      // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtEndOfMonth = currentFocusedDate === this.current.daysInMonth;
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
+        // If at the end of the month, go to the next month and focus on the first day of the next month.
         const nextDate = isAtEndOfMonth ? this.firstDateOfMonth : (currentFocusedDate + 1);
         const nextDateRef = this.getRefString(nextDate);
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
+
         this.updateTabIndex(currentFocusedDate, nextDateRef);
         this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement[0].focus();
       });
     },
     handleUpKeyPress(event) {
+      // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtBeginningOfMonth = (currentFocusedDate - 7) < this.firstDateOfMonth;
       const previousWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
@@ -288,15 +328,20 @@ export default {
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
+        // If in the first week of the month, go to the previous month
+        // and focus on the last day of the previous month with the same weekday.
+        // For example: Friday 1st November -> Go to previous month, and the last Friday of October is the 25th.
         const previousDateRef = this.getRefString(previousWeekDate);
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
+
         this.updateTabIndex(currentFocusedDate, previousDateRef);
         this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement[0].focus();
       });
     },
     handleDownKeyPress(event) {
+      // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtEndOfMonth = (currentFocusedDate + 7) > this.current.daysInMonth;
       const nextWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
@@ -304,23 +349,31 @@ export default {
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
+        // If in the last week of the month, go to the next month
+        // and focus on the first day of the next month with the same weekday.
+        // For example: Friday 29th November -> Go to next month, and the first Friday of December is the 6th.
         const nextDateRef = this.getRefString(nextWeekDate);
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
+
         this.updateTabIndex(currentFocusedDate, nextDateRef);
         this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement[0].focus();
       });
     },
+    /**
+     * When using keyboard to navigate through the dates we only want the focused date to be tabbable.
+     */
     updateTabIndex(currentFocusedDate, newDateRef) {
       this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       this.$refs[newDateRef][0].setAttribute('tabindex', 0);
     },
+    /**
+     * @param {Number} number
+     * @returns {String}
+     */
     getRefString(number) {
       return `date-${number}`;
-    },
-    getDateFromRef(ref) {
-      return ref.split('-')[1];
     },
     handleKeyPress(event) {
       if (event.keyCode !== 9) return; // Don't do anything if it is not a tab key press.
@@ -344,13 +397,19 @@ export default {
         }
       }
     },
+    /**
+     * @param {String} direction "next" or "previous"
+     */
     navigateMonth(direction) {
+      if (direction !== 'next' && direction !== 'previous') throw new Error('"direction" param needs to be "next" or "previous"');
       this.$emit(`go-to-${direction}-month`);
 
       this.$nextTick(() => {
+        // Once the month has been changed, focus on the first date of the month.
         const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
         const firstElementInMonth = this.$refs[firstRefOfMonth];
 
+        // We only want one date to be tabbable, remove the focus from any other dates.
         this.removeFocusFromButtons();
 
         if (firstElementInMonth && firstElementInMonth.length) {
@@ -361,9 +420,10 @@ export default {
       })
     },
     removeFocusFromButtons() {
-      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"');
+      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
       if (focusableButtons && focusableButtons.length) {
         focusableButtons.forEach((button) => {
+          // Remove the focus from any button that does not have the date "1".
           if (button.innerText !== "1") button.setAttribute('tabindex', -1);
         })
       }
@@ -388,6 +448,7 @@ $light-grey: #dbdbdb;
   }
 
   &__header {
+    align-items: center;
     border-bottom: 1px solid $light-grey;
     display: flex;
     justify-content: space-between;
@@ -406,7 +467,6 @@ $light-grey: #dbdbdb;
   }
 
   &__change-month-button {
-    display: flex;
     transition: opacity 0.3s ease;
 
     &:hover {

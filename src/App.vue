@@ -31,8 +31,8 @@
         v-if="isDatePickerVisible"
         :selected-date="selectedDate"
         :current="current"
-        :next="next"
-        :previous="previous"
+        :next="nextMonth"
+        :previous="previousMonth"
         :min-date="minDate"
         :max-date="maxDate"
         :navigate-month-icons="navigateMonthIcons"
@@ -64,11 +64,11 @@ export default {
       year: moment().get('year'),
       daysInMonth: moment().daysInMonth(),
     },
-    previous: {
+    previousMonth: {
       monthString: moment().subtract(1, 'month').format('MMMM'),
       year: moment().subtract(1, 'month').get('year'),
     },
-    next: {
+    nextMonth: {
       monthString: moment().add(1, 'month').format('MMMM'),
       year: moment().add(1, 'month').get('year'),
     },
@@ -97,11 +97,14 @@ export default {
       this.isDatePickerVisible = !this.isDatePickerVisible;
     },
     selectDate({ date, input = false }) {
-      if (input && !this.selectedDateInput.length) return;
-      const newDate = moment(input ? new Date(this.selectedDateInput) : new Date(this.current.year, this.current.month, date));
+      if (input && !this.selectedDateInput.length) return; // If input is true but there is no value then return.
+      const newDate = moment(input
+        ? new Date(this.selectedDateInput)
+        : new Date(this.current.year, this.current.month, date)
+      );
 
       this.selectedDate = newDate;
-      if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
+      if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY'); // If date was not selected via the input then set the value.
 
       if (input) this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
 
@@ -109,22 +112,37 @@ export default {
     },
     goToPreviousMonth() {
       if (this.current.month === 0) {
+        // Go to previous year if at the first month.
         this.current.month = 11;
         this.current.year = this.current.year - 1;
       } else {
         this.current.month = this.current.month - 1;
       }
       this.updateDaysInMonth();
+      this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
     },
     goToNextMonth() {
       const nextMonth = this.current.month + 1;
       if (nextMonth > 11) {
+        // Go to next year if at the last month.
         this.current.month = 0;
         this.current.year = this.current.year + 1;
       } else {
         this.current.month = nextMonth;
       }
       this.updateDaysInMonth();
+      this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
+    },
+    updateNextAndPreviousMonths({ year, month }) {
+      // Can't save moment([year, month, 1]) to a variable because moment overrides value rather than taking a copy.
+      this.previousMonth = {
+        monthString: moment([year, month, 1]).subtract(1, 'month').format('MMMM'),
+        year: moment([year, month, 1]).subtract(1, 'month').get('year'),
+      };
+      this.nextMonth = {
+        monthString: moment([year, month, 1]).add(1, 'month').format('MMMM'),
+        year: moment([year, month, 1]).add(1, 'month').get('year'),
+      };
     },
     updateCurrentDates({ year, month }) {
         this.current.year = year;
