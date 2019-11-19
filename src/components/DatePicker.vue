@@ -286,6 +286,51 @@ export default {
       return moment().isSame(date, 'day');
     },
     /**
+     * @param {String} direction "next" or "previous"
+     */
+    navigateMonth(direction) {
+      if (direction !== 'next' && direction !== 'previous') throw new Error('"direction" param needs to be "next" or "previous"');
+      this.$emit(`go-to-${direction}-month`);
+
+      this.$nextTick(() => {
+        // Once the month has been changed, focus on the first date of the month.
+        const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
+        const firstElementInMonth = this.$refs[firstRefOfMonth];
+
+        // We only want one date to be tabbable, remove the focus from any other dates.
+        this.removeFocusFromButtons();
+
+        if (firstElementInMonth && firstElementInMonth.length) {
+          firstElementInMonth[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = firstRefOfMonth;
+          firstElementInMonth[0].focus();
+        }
+      })
+    },
+    removeFocusFromButtons() {
+      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
+      if (focusableButtons && focusableButtons.length) {
+        focusableButtons.forEach((button) => {
+          // Remove the focus from any button that does not have the date "1".
+          if (button.innerText !== "1") button.setAttribute('tabindex', -1);
+        })
+      }
+    },
+    /**
+     * When using keyboard to navigate through the dates we only want the focused date to be tabbable.
+     */
+    updateTabIndex(currentFocusedDate, newDateRef) {
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      this.$refs[newDateRef][0].setAttribute('tabindex', 0);
+    },
+    /**
+     * @param {Number} number
+     * @returns {String}
+     */
+    getRefString(number) {
+      return `date-${number}`;
+    },
+    /**
      * Pressing the escape key closes the datepicker and moves focus to the input field.
      */
     handleEscapeKeyPress() {
@@ -356,7 +401,7 @@ export default {
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, previousDateRef);
+        previousElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement[0].focus();
       });
@@ -380,28 +425,33 @@ export default {
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, nextDateRef);
+        nextElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement[0].focus();
       });
     },
-    /**
-     * When using keyboard to navigate through the dates we only want the focused date to be tabbable.
-     */
-    updateTabIndex(currentFocusedDate, newDateRef) {
-      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
-      this.$refs[newDateRef][0].setAttribute('tabindex', 0);
-    },
-    /**
-     * @param {Number} number
-     * @returns {String}
-     */
-    getRefString(number) {
-      return `date-${number}`;
-    },
     handleKeyPress(event) {
-      if (event.keyCode !== 9) return; // Don't do anything if it is not a tab key press.
-
+      switch (event.keyCode) {
+      case 9: // TAB
+        this.handleTabKeyPress();
+        break;
+      case 33: // PAGE UP
+        this.handlePageUpKeyPress(event);
+        break;
+      case 34: // PAGE DOWN
+        this.handlePageDownKeyPress(event);
+        break;
+      case 35: // END
+        this.handleTabKeyPress(event);
+        break;
+      case 36: // HOME
+        this.handleHomeKeyPress(event);
+        break;
+      default:
+        break;
+      }
+    },
+    handleTabKeyPress() {
       // Create a focus trap when the datepicker is open.
       const focusableElements = document.querySelectorAll(
         '.v-datepicker__change-month-button:not([disabled]), .v-datepicker__day-button:not([tabindex="-1"]), .v-datepicker__footer-button',
@@ -421,37 +471,61 @@ export default {
         }
       }
     },
-    /**
-     * @param {String} direction "next" or "previous"
-     */
-    navigateMonth(direction) {
-      if (direction !== 'next' && direction !== 'previous') throw new Error('"direction" param needs to be "next" or "previous"');
-      this.$emit(`go-to-${direction}-month`);
+    /* eslint-disable */
+    handlePageUpKeyPress(event) {
+      const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      this.navigateMonth('previous');
 
       this.$nextTick(() => {
-        // Once the month has been changed, focus on the first date of the month.
-        const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
-        const firstElementInMonth = this.$refs[firstRefOfMonth];
+        const newElementRef = this.getRefString(currentFocusedDate);
+        const newElementToSelect = this.$refs[newElementRef];
 
-        // We only want one date to be tabbable, remove the focus from any other dates.
-        this.removeFocusFromButtons();
+        if (newElementToSelect && newElementToSelect.length) {
+          newElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = this.getRefString(newElementRef);
+          newElementToSelect[0].focus();
+        } else {
+          const alternativeElementRef = this.getRefString(currentFocusedDate - 7);
+          const alternativeElementToSelect = this.$refs[alternativeElementRef];
+          if (!alternativeElementToSelect) return;
 
-        if (firstElementInMonth && firstElementInMonth.length) {
-          firstElementInMonth[0].setAttribute('tabindex', 0);
-          this.currentFocusedRef = firstRefOfMonth;
-          firstElementInMonth[0].focus();
+          alternativeElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = this.getRefString(previousDateRef);
+          alternativeElementToSelect[0].focus();
         }
-      })
+      });
     },
-    removeFocusFromButtons() {
-      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
-      if (focusableButtons && focusableButtons.length) {
-        focusableButtons.forEach((button) => {
-          // Remove the focus from any button that does not have the date "1".
-          if (button.innerText !== "1") button.setAttribute('tabindex', -1);
-        })
-      }
-    }
+    handlePageDownKeyPress(event) {
+      const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      this.navigateMonth('next');
+
+      this.$nextTick(() => {
+        const newElementRef = this.getRefString(currentFocusedDate);
+        const newElementToSelect = this.$refs[newElementRef];
+
+        if (newElementToSelect && newElementToSelect.length) {
+          newElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = this.getRefString(newElementRef);
+          newElementToSelect[0].focus();
+        } else {
+          const alternativeElementRef = this.getRefString(currentFocusedDate + 7);
+          const alternativeElementToSelect = this.$refs[alternativeElementRef];
+          if (!alternativeElementToSelect) return;
+
+          alternativeElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = this.getRefString(previousDateRef);
+          alternativeElementToSelect[0].focus();
+        }
+      });
+    },
+    handleEndKeyPress(event) {
+
+    },
+    handleHomeKeyPress(event) {
+
+    },
   },
 }
 </script>
