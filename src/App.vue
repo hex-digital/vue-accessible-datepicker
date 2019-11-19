@@ -86,7 +86,7 @@ export default {
     // All dates before minDate are disabled.
     minDate: {
       type: Date,
-      default: () => new Date(),
+      default: null,
     },
     // All dates after maxDate are disabled.
     maxDate: {
