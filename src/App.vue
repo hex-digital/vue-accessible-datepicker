@@ -42,7 +42,7 @@
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
-        @close-datepicker="isDatePickerVisible = false"
+        @close-datepicker="toggleDatePicker"
       />
   </div>
 </template>
@@ -97,6 +97,10 @@ export default {
   methods: {
     toggleDatePicker() {
       this.isDatePickerVisible = !this.isDatePickerVisible;
+      if (!this.isDatePickerVisible) {
+        const input = document.getElementById('datepicker');
+        if (input) input.focus();
+      }
     },
     selectDate({ date, input = false }) {
       if (input && !this.selectedDateInput.length) return; // If input is true but there is no value then return.
@@ -110,7 +114,7 @@ export default {
 
       if (input) this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
 
-      this.isDatePickerVisible = false;
+      this.toggleDatePicker();
     },
     goToPreviousMonth() {
       if (this.current.month === 0) {
