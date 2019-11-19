@@ -1,5 +1,6 @@
 <template>
   <div
+    v-on-clickaway="closeDatepicker"
     class="v-datepicker__picker"
     role="application"
     aria-label="Calendar view date-picker"
@@ -53,6 +54,7 @@
             scope="col"
             v-for="(day, index) in dayNamesLetters"
             :key="index"
+            aria-hidden="true"
             class="v-datepicker__weekday"
           ><span :title="dayNames[index]">{{ day }}</span></th>
         </tr>
@@ -111,6 +113,7 @@
 
 <script>
 import moment from 'moment';
+import { directive as onClickaway } from 'vue-clickaway';
 import defaultNextArrowIcon from '../assets/next-arrow.svg'
 import defaultBackArrowIcon from '../assets/back-arrow.svg'
 import { dayNames, dayNamesLetters } from '../helpers/date-formats';
@@ -118,6 +121,7 @@ import { getFullDate } from '../helpers/dates';
 
 export default {
   name: 'DatePicker',
+  directives: { onClickaway: onClickaway },
   data: () => ({
     defaultNextArrowIcon,
     defaultBackArrowIcon,
@@ -241,6 +245,9 @@ export default {
   },
   methods: {
     moment,
+    closeDatepicker() {
+      this.$emit('close-datepicker');
+    },
     /**
      * @param {Number} date
      * @returns {Boolean} true if the selectedDate is the same as the date passed in.
@@ -279,7 +286,7 @@ export default {
      * Pressing the escape key closes the datepicker and moves focus to the input field.
      */
     handleEscapeKeyPress() {
-      this.$emit('close-datepicker');
+      this.closeDatepicker();
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
     },
