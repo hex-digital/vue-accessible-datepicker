@@ -110,10 +110,13 @@ export default {
       );
 
       this.selectedDate = newDate;
-      // If date was not selected via the input then set the value.
-      if (!input) this.selectedDateInput = newDate.format('MM/DD/YYYY');
-      if (input) this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
-      if (!input) this.toggleDatePicker(false);
+      if (input) {
+        this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+      } else {
+        // If date was not selected via the input then set the value.
+        this.selectedDateInput = newDate.format('MM/DD/YYYY');
+        this.toggleDatePicker(false);
+      }
     },
     goToPreviousMonth() {
       if (this.current.month === 0) {

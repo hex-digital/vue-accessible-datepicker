@@ -177,7 +177,7 @@ export default {
       if (avaliableFocusableDates && avaliableFocusableDates.length) {
         avaliableFocusableDates.forEach((date, index) => {
           if (index === 0) {
-            this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : this.getRefString(date);
+            this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : this.getRefString(date.innerText);
             selectedElement ? selectedElement.focus() : date.focus();
           } else {
             date.setAttribute('tabindex', -1);
@@ -297,42 +297,58 @@ export default {
       const dateInput = document.getElementById('datepicker');
       if (dateInput) dateInput.focus();
     },
+    /**
+     * Pressing the left arrow key navigates the focus to the previous date.
+     * If focus is on 1st of the month, change to the previous month
+     * and focus on the last date of the month.
+     */
     handleLeftKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtBeginningOfMonth = currentFocusedDate === this.firstDateOfMonth;
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
-        // If at the beginning of the month, go to the previous month and focus on the last day of the previous month.
         const previousDate = isAtBeginningOfMonth ? this.current.daysInMonth : (currentFocusedDate - 1);
         const previousDateRef = this.getRefString(previousDate);
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, previousDateRef);
+        previousElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement[0].focus();
       });
     },
+    /**
+     * Pressing the right arrow key navigates the focus to the next date.
+     * If focus is on the last date of the month, change to the next month
+     * and focus on the 1st of the month.
+     */
     handleRightKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtEndOfMonth = currentFocusedDate === this.current.daysInMonth;
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
-        // If at the end of the month, go to the next month and focus on the first day of the next month.
         const nextDate = isAtEndOfMonth ? this.firstDateOfMonth : (currentFocusedDate + 1);
         const nextDateRef = this.getRefString(nextDate);
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, nextDateRef);
+        nextElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement[0].focus();
       });
     },
+    /**
+     * Pressing the up arrow key navigates the focus to the previous weekday.
+     * If in the first week of the month, go to the previous month
+     * and focus on the last day of the previous month with the same weekday.
+     * For example: Friday 1st November 2019 -> Go to previous month, and the last Friday of October is the 25th.
+     */
     handleUpKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
@@ -342,9 +358,6 @@ export default {
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
       this.$nextTick(() => {
-        // If in the first week of the month, go to the previous month
-        // and focus on the last day of the previous month with the same weekday.
-        // For example: Friday 1st November -> Go to previous month, and the last Friday of October is the 25th.
         const previousDateRef = this.getRefString(previousWeekDate);
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
@@ -354,6 +367,12 @@ export default {
         previousElement[0].focus();
       });
     },
+    /**
+     * Pressing the down arrow key navigates the focus to the next weekday.
+     * If in the last week of the month, go to the next month
+     * and focus on the first day of the next month with the same weekday.
+     * For example: Friday 29th November 2019 -> Go to next month, and the first Friday of December is the 6th.
+     */
     handleDownKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
@@ -363,9 +382,6 @@ export default {
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
       this.$nextTick(() => {
-        // If in the last week of the month, go to the next month
-        // and focus on the first day of the next month with the same weekday.
-        // For example: Friday 29th November -> Go to next month, and the first Friday of December is the 6th.
         const nextDateRef = this.getRefString(nextWeekDate);
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
