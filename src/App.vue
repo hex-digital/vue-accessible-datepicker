@@ -78,16 +78,19 @@ export default {
       type: String,
       default: null,
     },
+    // Arrow icons to navigate through the months.
     navigateMonthIcons: {
       type: Object,
       default: null,
     },
+    // All dates before minDate are disabled.
     minDate: {
-      type: Object,
-      default: null,
+      type: Date,
+      default: () => new Date(),
     },
+    // All dates after maxDate are disabled.
     maxDate: {
-      type: Object,
+      type: Date,
       default: null,
     }
   },

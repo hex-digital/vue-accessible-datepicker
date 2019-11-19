@@ -94,6 +94,7 @@
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
               }"
               :tabindex="day.focusable ? 0 : -1"
+              :disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               @click="$emit('pick-date', { date: day.date })"
             >{{ day.date }}</button>
             <span v-else class="v-datepicker__filler-date">&nbsp;</span>
@@ -142,12 +143,12 @@ export default {
     },
     // All dates before minDate are disabled.
     minDate: {
-      type: Object,
+      type: Date,
       default: null,
     },
     // All dates after maxDate are disabled.
     maxDate: {
-      type: Object,
+      type: Date,
       default: null,
     },
     selectedDate: {
@@ -169,16 +170,22 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      // Get the first element to focus on when mounted. Either the selected date, or first date of the month.
+      // Get the first element to focus on when mounted. Either the selected date, or first available focusable date.
       const selectedElement = document.getElementById('selectedDateElement');
-      const firstOfMonthRef = this.getRefString(this.firstDateOfMonth);
-      const firstDateOfMonthElement = this.$refs[firstOfMonthRef];
+      const avaliableFocusableDates = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
+
+      if (avaliableFocusableDates && avaliableFocusableDates.length) {
+        avaliableFocusableDates.forEach((date, index) => {
+          if (index === 0) {
+            this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : this.getRefString(date);
+            selectedElement ? selectedElement.focus() : date.focus();
+          } else {
+            date.setAttribute('tabindex', -1);
+          }
+        });
+      }
 
       document.addEventListener('keydown', (event) => this.handleKeyPress(event));
-      if (selectedElement || firstDateOfMonthElement) {
-        this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : firstOfMonthRef;
-        selectedElement ? selectedElement.focus() : firstDateOfMonthElement[0].focus();
-      }
     });
   },
   destroyed() {
@@ -234,7 +241,7 @@ export default {
             day: isBlankDate ? null : fullDate.format('dddd'),
             month: isBlankDate ? null : this.current.month,
             year: isBlankDate ? null : this.current.year,
-            focusable: (correctDate) === this.firstDateOfMonth,
+            focusable: !(this.isBeforeMinDate(correctDate) || this.isAfterMaxDate(correctDate)),
           })
         }
 
@@ -263,7 +270,7 @@ export default {
     isBeforeMinDate(date) {
       if (!this.minDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
-      return moment(dateToCheck).isBefore(this.minDate, 'day');
+      return moment(dateToCheck).isBefore(moment(this.minDate), 'day');
     },
     /**
      * Used to disable all dates after the maxDate.
@@ -273,7 +280,7 @@ export default {
     isAfterMaxDate(date) {
       if (!this.maxDate) return false;
       const dateToCheck = moment(new Date(this.current.year, this.current.month, date));
-      return moment(dateToCheck).isAfter(this.maxDate, 'day');
+      return moment(dateToCheck).isAfter(moment(this.maxDate), 'day');
     },
     /**
      * @param {Number} date
