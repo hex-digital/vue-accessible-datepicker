@@ -2,8 +2,7 @@
   <div
     v-on-clickaway="closeDatepicker"
     class="v-datepicker__picker"
-    role="application"
-    aria-label="Calendar view date-picker"
+    aria-modal="true"
   >
     <div class="v-datepicker__header">
       <a
@@ -25,7 +24,7 @@
           width="18"
         >
       </a>
-      <p>{{ headerText }}</p>
+      <p id="current-month-year-header" aria-live="polite">{{ headerText }}</p>
       <a
         href
         role="button"
@@ -47,14 +46,14 @@
       </a>
     </div>
 
-    <table class="v-datepicker__content">
+    <table class="v-datepicker__content" role="grid" aria-labelledby="current-month-year-header">
       <thead class="v-datepicker__weekdays-wrapper">
         <tr class="v-datepicker__weekdays-row">
           <th
             scope="col"
+            :abbr="dayNames[index]"
             v-for="(day, index) in dayNamesLetters"
             :key="index"
-            aria-hidden="true"
             class="v-datepicker__weekday"
           ><span :title="dayNames[index]">{{ day }}</span></th>
         </tr>
@@ -77,11 +76,6 @@
             v-for="(day, dayIndex) in week"
             :key="dayIndex"
             class="v-datepicker__day"
-            data-handler="selectDay"
-            data-event="click"
-            :data-day="day.date"
-            :data-month="day.month + 1"
-            :data-year="day.year"
           >
             <button
               v-if="day.date"
@@ -94,6 +88,8 @@
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
               }"
               :tabindex="day.focusable ? 0 : -1"
+              :aria-selected="isSelected(day.date)"
+              :aria-disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               :disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               @click="$emit('pick-date', { date: day.date })"
             >{{ day.date }}</button>
@@ -294,8 +290,6 @@ export default {
      */
     handleEscapeKeyPress() {
       this.closeDatepicker();
-      const dateInput = document.getElementById('datepicker');
-      if (dateInput) dateInput.focus();
     },
     /**
      * Pressing the left arrow key navigates the focus to the previous date.

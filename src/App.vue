@@ -11,13 +11,15 @@
           id="datepicker"
           type="text"
           class="v-datepicker__input"
+          aria-autocomplete="none"
           v-model="selectedDateInput"
           @blur="selectDate({ input: true })"
         >
         <button
+          id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
           aria-describedby="datepickerLabel"
-          aria-label="Open the calendar"
+          :aria-label="buttonAriaLabel"
           @click="toggleDatePicker(!isDatePickerVisible)"
         >
           <img
@@ -94,12 +96,20 @@ export default {
       default: null,
     }
   },
+  computed: {
+    buttonAriaLabel() {
+      const selectedDate = this.selectedDate
+        ? this.selectedDate.format('dddd MMMM Do, YYYY')
+        : null;
+      return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
+    },
+  },
   methods: {
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
-        const input = document.getElementById('datepicker');
-        if (input) input.focus();
+        const toggleButton = document.getElementById('datepicker-toggle-button');
+        if (toggleButton) toggleButton.focus();
       }
     },
     selectDate({ date, input = false }) {
