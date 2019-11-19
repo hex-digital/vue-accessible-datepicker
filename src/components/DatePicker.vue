@@ -102,7 +102,7 @@
     <div class="v-datepicker__footer">
       <button
         class="v-datepicker__footer-button"
-        aria-label="Close the datepicker"
+        aria-label="Close the calendar"
         @click="$emit('close-datepicker')"
       >Close</button>
     </div>

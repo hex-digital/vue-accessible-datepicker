@@ -17,6 +17,7 @@
         <button
           class="v-datepicker__toggle-button"
           aria-describedby="datepickerLabel"
+          aria-label="Open the calendar"
           @click="toggleDatePicker"
         >
           <img
@@ -29,6 +30,7 @@
 
       <date-picker
         v-if="isDatePickerVisible"
+        :aria-hidden="!isDatePickerVisible"
         :selected-date="selectedDate"
         :current="current"
         :next="nextMonth"
