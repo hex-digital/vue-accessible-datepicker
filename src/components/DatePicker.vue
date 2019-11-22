@@ -2,8 +2,7 @@
   <div
     v-on-clickaway="closeDatepicker"
     class="v-datepicker__picker"
-    role="application"
-    aria-label="Calendar view date-picker"
+    aria-modal="true"
   >
     <div class="v-datepicker__header">
       <a
@@ -25,7 +24,7 @@
           width="18"
         >
       </a>
-      <p>{{ headerText }}</p>
+      <p id="current-month-year-header" aria-live="polite">{{ headerText }}</p>
       <a
         href
         role="button"
@@ -47,14 +46,14 @@
       </a>
     </div>
 
-    <table class="v-datepicker__content">
+    <table class="v-datepicker__content" role="grid" aria-labelledby="current-month-year-header">
       <thead class="v-datepicker__weekdays-wrapper">
         <tr class="v-datepicker__weekdays-row">
           <th
             scope="col"
+            :abbr="dayNames[index]"
             v-for="(day, index) in dayNamesLetters"
             :key="index"
-            aria-hidden="true"
             class="v-datepicker__weekday"
           ><span :title="dayNames[index]">{{ day }}</span></th>
         </tr>
@@ -77,11 +76,6 @@
             v-for="(day, dayIndex) in week"
             :key="dayIndex"
             class="v-datepicker__day"
-            data-handler="selectDay"
-            data-event="click"
-            :data-day="day.date"
-            :data-month="day.month + 1"
-            :data-year="day.year"
           >
             <button
               v-if="day.date"
@@ -94,6 +88,8 @@
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
               }"
               :tabindex="day.focusable ? 0 : -1"
+              :aria-selected="isSelected(day.date)"
+              :aria-disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               :disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               @click="$emit('pick-date', { date: day.date })"
             >{{ day.date }}</button>
@@ -232,7 +228,7 @@ export default {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
           const correctDate = date - this.firstDayInMonth; // Remove the offset added at the start.
-          const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: correctDate });
+          const fullDate = this.getFullDate(correctDate);
 
           if (!weeks[week - 1]) return {weeks};
           weeks[week - 1].push({ // Add the date to the correct week in the weeks array.
@@ -290,12 +286,62 @@ export default {
       return moment().isSame(date, 'day');
     },
     /**
+     * @param {String} direction "next" or "previous"
+     */
+    navigateMonth(direction) {
+      if (direction !== 'next' && direction !== 'previous') throw new Error('"direction" param needs to be "next" or "previous"');
+      this.$emit(`go-to-${direction}-month`);
+
+      this.$nextTick(() => {
+        // Once the month has been changed, focus on the first date of the month.
+        const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
+        const firstElementInMonth = this.$refs[firstRefOfMonth];
+
+        // We only want one date to be tabbable, remove the focus from any other dates.
+        this.removeFocusFromButtons();
+
+        if (firstElementInMonth && firstElementInMonth.length) {
+          firstElementInMonth[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = firstRefOfMonth;
+          firstElementInMonth[0].focus();
+        }
+      })
+    },
+    removeFocusFromButtons() {
+      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
+      if (focusableButtons && focusableButtons.length) {
+        focusableButtons.forEach((button) => {
+          // Remove the focus from any button that does not have the date "1".
+          if (button.innerText !== "1") button.setAttribute('tabindex', -1);
+        })
+      }
+    },
+    /**
+     * When using keyboard to navigate through the dates we only want the focused date to be tabbable.
+     */
+    updateTabIndex(currentFocusedDate, newDateRef) {
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      this.$refs[newDateRef][0].setAttribute('tabindex', 0);
+    },
+    /**
+     * @param {Number} number
+     * @returns {String}
+     */
+    getRefString(number) {
+      return `date-${number}`;
+    },
+    /**
+     * @param {Number} date
+     * @returns {String}
+     */
+    getFullDate(date) {
+      return getFullDate({ year: this.current.year, month: this.current.month, date });
+    },
+    /**
      * Pressing the escape key closes the datepicker and moves focus to the input field.
      */
     handleEscapeKeyPress() {
       this.closeDatepicker();
-      const dateInput = document.getElementById('datepicker');
-      if (dateInput) dateInput.focus();
     },
     /**
      * Pressing the left arrow key navigates the focus to the previous date.
@@ -353,7 +399,7 @@ export default {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtBeginningOfMonth = (currentFocusedDate - 7) < this.firstDateOfMonth;
-      const previousWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
+      const previousWeekDate = this.getFullDate(currentFocusedDate)
         .subtract(1, 'week').date();
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
@@ -362,7 +408,7 @@ export default {
         const previousElement = this.$refs[previousDateRef];
         if (!previousElement || !previousElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, previousDateRef);
+        previousElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(previousDateRef);
         previousElement[0].focus();
       });
@@ -377,7 +423,7 @@ export default {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtEndOfMonth = (currentFocusedDate + 7) > this.current.daysInMonth;
-      const nextWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
+      const nextWeekDate = this.getFullDate(currentFocusedDate)
         .add(1, 'week').date();
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
@@ -386,28 +432,33 @@ export default {
         const nextElement = this.$refs[nextDateRef];
         if (!nextElement || !nextElement.length) return;
 
-        this.updateTabIndex(currentFocusedDate, nextDateRef);
+        nextElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = this.getRefString(nextDateRef);
         nextElement[0].focus();
       });
     },
-    /**
-     * When using keyboard to navigate through the dates we only want the focused date to be tabbable.
-     */
-    updateTabIndex(currentFocusedDate, newDateRef) {
-      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
-      this.$refs[newDateRef][0].setAttribute('tabindex', 0);
-    },
-    /**
-     * @param {Number} number
-     * @returns {String}
-     */
-    getRefString(number) {
-      return `date-${number}`;
-    },
     handleKeyPress(event) {
-      if (event.keyCode !== 9) return; // Don't do anything if it is not a tab key press.
-
+      switch (event.keyCode) {
+      case 9: // TAB
+        this.handleTabKeyPress();
+        break;
+      case 33: // PAGE UP
+        this.handlePageKeyPress(event, 'previous');
+        break;
+      case 34: // PAGE DOWN
+        this.handlePageKeyPress(event, 'next');
+        break;
+      case 35: // END
+        this.handleHomeEndKeyPress(event);
+        break;
+      case 36: // HOME
+        this.handleHomeEndKeyPress(event);
+        break;
+      default:
+        break;
+      }
+    },
+    handleTabKeyPress() {
       // Create a focus trap when the datepicker is open.
       const focusableElements = document.querySelectorAll(
         '.v-datepicker__change-month-button:not([disabled]), .v-datepicker__day-button:not([tabindex="-1"]), .v-datepicker__footer-button',
@@ -428,36 +479,81 @@ export default {
       }
     },
     /**
-     * @param {String} direction "next" or "previous"
+     * **Page Up key press:**
+     * - Changes the grid of dates to the previous month.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Shift + Page Up key press:**
+     * - Changes the grid of dates to the previous Year.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Page Down key press:**
+     * - Changes the grid of dates to the next month.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Shift + Page Down key press:**
+     * - Changes the grid of dates to the next Year.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
      */
-    navigateMonth(direction) {
-      if (direction !== 'next' && direction !== 'previous') throw new Error('"direction" param needs to be "next" or "previous"');
-      this.$emit(`go-to-${direction}-month`);
+    handlePageKeyPress(event, direction) {
+      const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      event.shiftKey ? this.$emit('change-year', direction) : this.navigateMonth(direction);
 
       this.$nextTick(() => {
-        // Once the month has been changed, focus on the first date of the month.
-        const firstRefOfMonth = this.getRefString(this.firstDateOfMonth);
-        const firstElementInMonth = this.$refs[firstRefOfMonth];
+        const newElementRef = this.getRefString(currentFocusedDate);
+        const newElementToSelect = this.$refs[newElementRef];
 
-        // We only want one date to be tabbable, remove the focus from any other dates.
-        this.removeFocusFromButtons();
+        if (newElementToSelect && newElementToSelect.length) {
+          // If that date is available, focus on that.
+          newElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = this.getRefString(newElementRef);
+          newElementToSelect[0].focus();
+        } else {
+          // Othewise focus on the next available date.
+          const alternativeElementRef = this.getRefString(direction === 'next' ? currentFocusedDate + 7 : currentFocusedDate - 7);
+          const alternativeElementToSelect = this.$refs[alternativeElementRef];
+          if (!alternativeElementToSelect) return;
 
-        if (firstElementInMonth && firstElementInMonth.length) {
-          firstElementInMonth[0].setAttribute('tabindex', 0);
-          this.currentFocusedRef = firstRefOfMonth;
-          firstElementInMonth[0].focus();
+          alternativeElementToSelect[0].setAttribute('tabindex', 0);
+          this.currentFocusedRef = alternativeElementRef;
+          alternativeElementToSelect[0].focus();
         }
-      })
+      });
     },
-    removeFocusFromButtons() {
-      const focusableButtons = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
-      if (focusableButtons && focusableButtons.length) {
-        focusableButtons.forEach((button) => {
-          // Remove the focus from any button that does not have the date "1".
-          if (button.innerText !== "1") button.setAttribute('tabindex', -1);
-        })
-      }
-    }
+    /**
+     * **Home key press:**
+     * - Moves focus to the first day (e.g Sunday) of the current week.
+     *
+     * **End key press:**
+     * - Moves focus to the last day (e.g. Saturday) of the current week.
+     */
+    handleHomeEndKeyPress(event) {
+      const actions = {
+        perimeterFunction: event.keyCode === 35 ? 'endOf' : 'startOf',
+        direction: event.keyCode === 35 ? 'next' : 'previous',
+      };
+      const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      const fullDate = this.getFullDate(currentFocusedDate);
+      const nextDate = this.getFullDate(currentFocusedDate)[actions.perimeterFunction]('week');
+
+      if (!fullDate.isSame(nextDate, 'month')) this.navigateMonth(actions.direction);
+
+      this.$nextTick(() => {
+        const nextRef = this.getRefString(nextDate.get('date'));
+        const nextElement = this.$refs[nextRef];
+        if (!nextElement) return;
+
+        nextElement[0].setAttribute('tabindex', 0);
+        this.currentFocusedRef = nextRef;
+        nextElement[0].focus();
+      });
+    },
   },
 }
 </script>

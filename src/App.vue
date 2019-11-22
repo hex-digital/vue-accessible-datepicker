@@ -11,13 +11,15 @@
           id="datepicker"
           type="text"
           class="v-datepicker__input"
+          aria-autocomplete="none"
           v-model="selectedDateInput"
           @blur="selectDate({ input: true })"
         >
         <button
+          id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
           aria-describedby="datepickerLabel"
-          aria-label="Open the calendar"
+          :aria-label="buttonAriaLabel"
           @click="toggleDatePicker(!isDatePickerVisible)"
         >
           <img
@@ -41,6 +43,7 @@
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
+        @change-year="changeYear"
         @close-datepicker="toggleDatePicker(false)"
       />
   </div>
@@ -94,12 +97,20 @@ export default {
       default: null,
     }
   },
+  computed: {
+    buttonAriaLabel() {
+      const selectedDate = this.selectedDate
+        ? this.selectedDate.format('dddd MMMM Do, YYYY')
+        : null;
+      return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
+    },
+  },
   methods: {
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
-        const input = document.getElementById('datepicker');
-        if (input) input.focus();
+        const toggleButton = document.getElementById('datepicker-toggle-button');
+        if (toggleButton) toggleButton.focus();
       }
     },
     selectDate({ date, input = false }) {
@@ -139,6 +150,13 @@ export default {
         this.current.month = nextMonth;
       }
       this.updateDaysInMonth();
+      this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
+    },
+    changeYear(direction) {
+      const calculateFunction = (firstValue, secondValue) =>
+        direction === 'next' ? firstValue + secondValue : firstValue - secondValue;
+
+      this.current.year = calculateFunction(this.current.year, 1);
       this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
     },
     updateNextAndPreviousMonths({ year, month }) {
