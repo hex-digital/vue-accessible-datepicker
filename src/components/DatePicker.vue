@@ -228,7 +228,7 @@ export default {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
           const correctDate = date - this.firstDayInMonth; // Remove the offset added at the start.
-          const fullDate = getFullDate({ year: this.current.year, month: this.current.month, date: correctDate });
+          const fullDate = this.getFullDate(correctDate);
 
           if (!weeks[week - 1]) return {weeks};
           weeks[week - 1].push({ // Add the date to the correct week in the weeks array.
@@ -331,6 +331,13 @@ export default {
       return `date-${number}`;
     },
     /**
+     * @param {Number} date
+     * @returns {String}
+     */
+    getFullDate(date) {
+      return getFullDate({ year: this.current.year, month: this.current.month, date });
+    },
+    /**
      * Pressing the escape key closes the datepicker and moves focus to the input field.
      */
     handleEscapeKeyPress() {
@@ -392,7 +399,7 @@ export default {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtBeginningOfMonth = (currentFocusedDate - 7) < this.firstDateOfMonth;
-      const previousWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
+      const previousWeekDate = this.getFullDate(currentFocusedDate)
         .subtract(1, 'week').date();
       if (isAtBeginningOfMonth) this.$emit('go-to-previous-month');
 
@@ -416,7 +423,7 @@ export default {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
       const isAtEndOfMonth = (currentFocusedDate + 7) > this.current.daysInMonth;
-      const nextWeekDate = getFullDate({ year: this.current.year, month: this.current.month, date: currentFocusedDate })
+      const nextWeekDate = this.getFullDate(currentFocusedDate)
         .add(1, 'week').date();
       if (isAtEndOfMonth) this.$emit('go-to-next-month');
 
@@ -442,7 +449,7 @@ export default {
         this.handlePageKeyPress(event, 'next');
         break;
       case 35: // END
-        this.handleTabKeyPress(event);
+        this.handleEndKeyPress(event);
         break;
       case 36: // HOME
         this.handleHomeKeyPress(event);
@@ -497,7 +504,24 @@ export default {
         }
       });
     },
-    // handleEndKeyPress(event) {},
+    handleEndKeyPress(event) {
+      const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
+      const fullDate = this.getFullDate(currentFocusedDate);
+      const endOfWeekDate = this.getFullDate(currentFocusedDate).endOf('week');
+
+      if (!fullDate.isSame(endOfWeekDate, 'month')) this.navigateMonth('next');
+
+      this.$nextTick(() => {
+        const endOfWeekRef = this.getRefString(endOfWeekDate.get('date'));
+        const endOfWeekElement = this.$refs[endOfWeekRef];
+        if (!endOfWeekElement) return;
+
+        endOfWeekElement[0].setAttribute('tabindex', 0);
+        this.currentFocusedRef = endOfWeekRef;
+        endOfWeekElement[0].focus();
+      });
+    },
     // handleHomeKeyPress(event) {},
   },
 }
