@@ -43,6 +43,7 @@
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
+        @change-year="changeYear"
         @close-datepicker="toggleDatePicker(false)"
       />
   </div>
@@ -149,6 +150,13 @@ export default {
         this.current.month = nextMonth;
       }
       this.updateDaysInMonth();
+      this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
+    },
+    changeYear(direction) {
+      const calculateFunction = (firstValue, secondValue) =>
+        direction === 'next' ? firstValue + secondValue : firstValue - secondValue;
+
+      this.current.year = calculateFunction(this.current.year, 1);
       this.updateNextAndPreviousMonths({ year: this.current.year, month: this.current.month });
     },
     updateNextAndPreviousMonths({ year, month }) {

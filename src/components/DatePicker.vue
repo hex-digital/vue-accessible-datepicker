@@ -436,10 +436,10 @@ export default {
         this.handleTabKeyPress();
         break;
       case 33: // PAGE UP
-        this.handlePageUpKeyPress(event);
+        this.handlePageKeyPress(event, 'previous');
         break;
       case 34: // PAGE DOWN
-        this.handlePageDownKeyPress(event);
+        this.handlePageKeyPress(event, 'next');
         break;
       case 35: // END
         this.handleTabKeyPress(event);
@@ -471,61 +471,34 @@ export default {
         }
       }
     },
-    /* eslint-disable */
-    handlePageUpKeyPress(event) {
+    handlePageKeyPress(event, direction) {
       const currentFocusedDate = parseInt(event.target.innerText);
       this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
-      this.navigateMonth('previous');
+      event.shiftKey ? this.$emit('change-year', direction) : this.navigateMonth(direction);
 
       this.$nextTick(() => {
         const newElementRef = this.getRefString(currentFocusedDate);
         const newElementToSelect = this.$refs[newElementRef];
 
         if (newElementToSelect && newElementToSelect.length) {
+          // If that date is available, focus on that.
           newElementToSelect[0].setAttribute('tabindex', 0);
           this.currentFocusedRef = this.getRefString(newElementRef);
           newElementToSelect[0].focus();
         } else {
-          const alternativeElementRef = this.getRefString(currentFocusedDate - 7);
+          // Othewise focus on the next available date.
+          const alternativeElementRef = this.getRefString(direction === 'next' ? currentFocusedDate + 7 : currentFocusedDate - 7);
           const alternativeElementToSelect = this.$refs[alternativeElementRef];
           if (!alternativeElementToSelect) return;
 
           alternativeElementToSelect[0].setAttribute('tabindex', 0);
-          this.currentFocusedRef = this.getRefString(previousDateRef);
+          this.currentFocusedRef = alternativeElementRef;
           alternativeElementToSelect[0].focus();
         }
       });
     },
-    handlePageDownKeyPress(event) {
-      const currentFocusedDate = parseInt(event.target.innerText);
-      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
-      this.navigateMonth('next');
-
-      this.$nextTick(() => {
-        const newElementRef = this.getRefString(currentFocusedDate);
-        const newElementToSelect = this.$refs[newElementRef];
-
-        if (newElementToSelect && newElementToSelect.length) {
-          newElementToSelect[0].setAttribute('tabindex', 0);
-          this.currentFocusedRef = this.getRefString(newElementRef);
-          newElementToSelect[0].focus();
-        } else {
-          const alternativeElementRef = this.getRefString(currentFocusedDate + 7);
-          const alternativeElementToSelect = this.$refs[alternativeElementRef];
-          if (!alternativeElementToSelect) return;
-
-          alternativeElementToSelect[0].setAttribute('tabindex', 0);
-          this.currentFocusedRef = this.getRefString(previousDateRef);
-          alternativeElementToSelect[0].focus();
-        }
-      });
-    },
-    handleEndKeyPress(event) {
-
-    },
-    handleHomeKeyPress(event) {
-
-    },
+    // handleEndKeyPress(event) {},
+    // handleHomeKeyPress(event) {},
   },
 }
 </script>
