@@ -2,16 +2,23 @@
   <div
     v-on-clickaway="closeDatepicker"
     class="v-datepicker__picker"
+    :class="customClasses ? customClasses.datepickerWrapper : null"
     aria-modal="true"
   >
-    <div class="v-datepicker__header">
+    <div
+      class="v-datepicker__header"
+      :class="customClasses ? customClasses.datepickerHeader : null"
+    >
       <a
         href
         role="button"
         :disabled="monthIsSameMinMonth"
-        :class="{'v-datepicker__change-month-button--disabled': monthIsSameMinMonth}"
         :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
         class="v-datepicker__change-month-button"
+        :class="{
+          'v-datepicker__change-month-button--disabled': monthIsSameMinMonth,
+          [customClasses.datepickerHeader]: customClasses && customClasses.datepickerHeader
+        }"
         data-handler="previous"
         data-event="click"
         @keyup.space.capture="navigateMonth('previous')"
@@ -145,6 +152,10 @@ export default {
     // All dates after maxDate are disabled.
     maxDate: {
       type: Date,
+      default: null,
+    },
+    customClasses: {
+      type: Object,
       default: null,
     },
     selectedDate: {
