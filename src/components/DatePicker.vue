@@ -449,10 +449,10 @@ export default {
         this.handlePageKeyPress(event, 'next');
         break;
       case 35: // END
-        this.handleEndKeyPress(event);
+        this.handleHomeEndKeyPress(event);
         break;
       case 36: // HOME
-        this.handleHomeKeyPress(event);
+        this.handleHomeEndKeyPress(event);
         break;
       default:
         break;
@@ -478,6 +478,27 @@ export default {
         }
       }
     },
+    /**
+     * **Page Up key press:**
+     * - Changes the grid of dates to the previous month.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Shift + Page Up key press:**
+     * - Changes the grid of dates to the previous Year.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Page Down key press:**
+     * - Changes the grid of dates to the next month.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     *
+     * **Shift + Page Down key press:**
+     * - Changes the grid of dates to the next Year.
+     * - Sets focus on the same day of the same week. If that day does not exist,
+     * then moves focus to the same day of the previous or next week.
+     */
     handlePageKeyPress(event, direction) {
       const currentFocusedDate = parseInt(event.target.innerText);
       this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
@@ -504,25 +525,35 @@ export default {
         }
       });
     },
-    handleEndKeyPress(event) {
+    /**
+     * **Home key press:**
+     * - Moves focus to the first day (e.g Sunday) of the current week.
+     *
+     * **End key press:**
+     * - Moves focus to the last day (e.g. Saturday) of the current week.
+     */
+    handleHomeEndKeyPress(event) {
+      const actions = {
+        perimeterFunction: event.keyCode === 35 ? 'endOf' : 'startOf',
+        direction: event.keyCode === 35 ? 'next' : 'previous',
+      };
       const currentFocusedDate = parseInt(event.target.innerText);
       this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       const fullDate = this.getFullDate(currentFocusedDate);
-      const endOfWeekDate = this.getFullDate(currentFocusedDate).endOf('week');
+      const nextDate = this.getFullDate(currentFocusedDate)[actions.perimeterFunction]('week');
 
-      if (!fullDate.isSame(endOfWeekDate, 'month')) this.navigateMonth('next');
+      if (!fullDate.isSame(nextDate, 'month')) this.navigateMonth(actions.direction);
 
       this.$nextTick(() => {
-        const endOfWeekRef = this.getRefString(endOfWeekDate.get('date'));
-        const endOfWeekElement = this.$refs[endOfWeekRef];
-        if (!endOfWeekElement) return;
+        const nextRef = this.getRefString(nextDate.get('date'));
+        const nextElement = this.$refs[nextRef];
+        if (!nextElement) return;
 
-        endOfWeekElement[0].setAttribute('tabindex', 0);
-        this.currentFocusedRef = endOfWeekRef;
-        endOfWeekElement[0].focus();
+        nextElement[0].setAttribute('tabindex', 0);
+        this.currentFocusedRef = nextRef;
+        nextElement[0].focus();
       });
     },
-    // handleHomeKeyPress(event) {},
   },
 }
 </script>
