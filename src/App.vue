@@ -1,16 +1,26 @@
 <template>
-  <div id="app" class="v-datepicker">
+  <div
+    id="app"
+    class="v-datepicker"
+    :class="customClasses.wrapper || ''"
+  >
       <label
         id="datepickerLabel"
         for="datepicker"
         class="v-datepicker__input-label"
-      >Date (mm/dd/yyyy):</label>
+        :class="customClasses.inputLabel || ''"
+      >{{ labelText }}</label>
 
-      <div class="v-datepicker__input-wrapper">
+      <div
+        class="v-datepicker__input-wrapper"
+        :class="customClasses.inputWrapper || ''"
+      >
         <input
           id="datepicker"
           type="text"
           class="v-datepicker__input"
+          :class="customClasses.input || ''"
+          :placeholder="inputPlaceholder"
           aria-autocomplete="none"
           v-model="selectedDateInput"
           @blur="selectDate({ input: true })"
@@ -18,6 +28,7 @@
         <button
           id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
+          :class="customClasses.toggleButton || ''"
           aria-describedby="datepickerLabel"
           :aria-label="buttonAriaLabel"
           @click="toggleDatePicker(!isDatePickerVisible)"
@@ -26,6 +37,7 @@
             :src="calendarIcon || defaultCalendarIcon"
             alt="calendar icon"
             class="v-datepicker__toggle-button-icon"
+            :class="customClasses.toggleButtonIcon || ''"
           >
         </button>
       </div>
@@ -40,6 +52,7 @@
         :min-date="minDate"
         :max-date="maxDate"
         :navigate-month-icons="navigateMonthIcons"
+        :custom-classes="customClasses"
         @pick-date="selectDate"
         @go-to-next-month="goToNextMonth"
         @go-to-previous-month="goToPreviousMonth"
@@ -81,6 +94,18 @@ export default {
       type: String,
       default: null,
     },
+    labelText: {
+      type: String,
+      default: 'Date (mm/dd/yyyy):',
+    },
+    initialValue: {
+      type: String,
+      default: null,
+    },
+    inputPlaceholder: {
+      type: String,
+      default: null,
+    },
     // Arrow icons to navigate through the months.
     navigateMonthIcons: {
       type: Object,
@@ -95,7 +120,11 @@ export default {
     maxDate: {
       type: Date,
       default: null,
-    }
+    },
+    customClasses: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   computed: {
     buttonAriaLabel() {
@@ -104,6 +133,12 @@ export default {
         : null;
       return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
     },
+  },
+  beforeMount() {
+    if (this.initialValue) {
+      this.selectedDateInput = this.initialValue;
+      this.selectDate({ input: true });
+    }
   },
   methods: {
     toggleDatePicker(isVisible) {

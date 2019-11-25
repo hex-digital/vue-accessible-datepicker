@@ -2,16 +2,23 @@
   <div
     v-on-clickaway="closeDatepicker"
     class="v-datepicker__picker"
+    :class="customClasses.datepickerWrapper || ''"
     aria-modal="true"
   >
-    <div class="v-datepicker__header">
+    <div
+      class="v-datepicker__header"
+      :class="customClasses.datepickerHeader || ''"
+    >
       <a
         href
         role="button"
         :disabled="monthIsSameMinMonth"
-        :class="{'v-datepicker__change-month-button--disabled': monthIsSameMinMonth}"
         :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
         class="v-datepicker__change-month-button"
+        :class="{
+          'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth,
+          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton
+        }"
         data-handler="previous"
         data-event="click"
         @keyup.space.capture="navigateMonth('previous')"
@@ -20,16 +27,24 @@
         <img
           :src="navigateMonthIcons && navigateMonthIcons.previous
             ? navigateMonthIcons.previous : defaultBackArrowIcon"
+          :class="customClasses.datepickerBackArrow || ''"
           alt="back arrow"
           width="18"
         >
       </a>
-      <p id="current-month-year-header" aria-live="polite">{{ headerText }}</p>
+      <p
+        id="current-month-year-header"
+        aria-live="polite"
+        :class="customClasses.datepickerHeader || ''"
+      >{{ headerText }}</p>
       <a
         href
         role="button"
         :disabled="monthIsSameMaxMonth"
-        :class="{'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth}"
+        :class="{
+          'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth,
+          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton
+        }"
         :aria-label="`Next month, ${next.monthString} ${next.year}`"
         class="v-datepicker__change-month-button"
         data-handler="next"
@@ -40,27 +55,35 @@
         <img
           :src="navigateMonthIcons && navigateMonthIcons.next
             ? navigateMonthIcons.next : defaultNextArrowIcon"
+          :class="customClasses.datepickerNextArrow || ''"
           alt="next arrow"
           width="18"
         >
       </a>
     </div>
 
-    <table class="v-datepicker__content" role="grid" aria-labelledby="current-month-year-header">
-      <thead class="v-datepicker__weekdays-wrapper">
-        <tr class="v-datepicker__weekdays-row">
+    <table
+      class="v-datepicker__content"
+      :class="customClasses.datepickerContent || ''"
+      role="grid"
+      aria-labelledby="current-month-year-header"
+    >
+      <thead class="v-datepicker__weekdays-wrapper" :class="customClasses.datepickerWeekdaysWrapper || ''">
+        <tr class="v-datepicker__weekdays-row" :class="customClasses.datepickerWeekdaysRowWrapper || ''">
           <th
             scope="col"
             :abbr="dayNames[index]"
             v-for="(day, index) in dayNamesLetters"
             :key="index"
             class="v-datepicker__weekday"
+            :class="customClasses.datepickerWeekday || ''"
           ><span :title="dayNames[index]">{{ day }}</span></th>
         </tr>
       </thead>
 
       <tbody
         class="v-datepicker__weeks"
+        :class="customClasses.datepickerWeeks || ''"
         @keyup.esc="handleEscapeKeyPress"
         @keyup.left="handleLeftKeyPress($event)"
         @keyup.right="handleRightKeyPress($event)"
@@ -71,11 +94,13 @@
           v-for="(week, weekIndex) in calendar.weeks"
           :key="`week-${weekIndex}`"
           class="v-datepicker__week"
+          :class="customClasses.datepickerWee || ''"
         >
           <td
             v-for="(day, dayIndex) in week"
             :key="dayIndex"
             class="v-datepicker__day"
+            :class="customClasses.datepickerDay || ''"
           >
             <button
               v-if="day.date"
@@ -85,7 +110,8 @@
               :ref="day.ref"
               :class="{
                 'v-datepicker__day-button--selected': isSelected(day.date),
-                'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date)
+                'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date),
+                [customClasses.datepickerDayButton]: customClasses.datepickerDayButton
               }"
               :tabindex="day.focusable ? 0 : -1"
               :aria-selected="isSelected(day.date)"
@@ -93,14 +119,19 @@
               :disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               @click="$emit('pick-date', { date: day.date })"
             >{{ day.date }}</button>
-            <span v-else class="v-datepicker__filler-date">&nbsp;</span>
+            <span
+              v-else
+              class="v-datepicker__filler-date"
+              :class="customClasses.datepickerFillerDate || ''"
+            >&nbsp;</span>
           </td>
         </tr>
       </tbody>
     </table>
-    <div class="v-datepicker__footer">
+    <div class="v-datepicker__footer" :class="customClasses.datepickerFooter || ''">
       <button
         class="v-datepicker__footer-button"
+        :class="customClasses.datepickerFooterButton || ''"
         aria-label="Close the calendar"
         @click="$emit('close-datepicker')"
       >Close</button>
@@ -145,6 +176,10 @@ export default {
     // All dates after maxDate are disabled.
     maxDate: {
       type: Date,
+      default: null,
+    },
+    customClasses: {
+      type: Object,
       default: null,
     },
     selectedDate: {
