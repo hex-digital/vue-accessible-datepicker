@@ -66,6 +66,7 @@
 import moment from 'moment';
 import defaultCalendarIcon from './assets/calendar.svg'
 import DatePicker from './components/DatePicker';
+import { resetFormat } from './helpers/date-formats';
 
 export default {
   name: 'app',
@@ -94,9 +95,9 @@ export default {
       type: String,
       default: null,
     },
-    labelText: {
+    label: {
       type: String,
-      default: 'Date (mm/dd/yyyy):',
+      default: null,
     },
     initialValue: {
       type: String,
@@ -125,6 +126,21 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    dateFormat: {
+      type: String,
+      // https://momentjs.com/docs/#/displaying/format/
+      default: 'MM/DD/YYYY',
+      validator(value) {
+        return [
+            'MM/DD/YYYY',
+            'MM-DD-YYYY',
+            'DD/MM/YYYY',
+            'DD-MM-YYYY',
+            'YYYY/MM/DD',
+            'YYYY-MM-DD',
+        ].indexOf(value) !== -1;
+    },
+    },
   },
   computed: {
     buttonAriaLabel() {
@@ -133,6 +149,9 @@ export default {
         : null;
       return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
     },
+    labelText() {
+      return this.label || `Date (${this.dateFormat.toLocaleLowerCase()}):`;
+    }
   },
   beforeMount() {
     if (this.initialValue) {
@@ -141,6 +160,7 @@ export default {
     }
   },
   methods: {
+    resetFormat,
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
@@ -148,10 +168,13 @@ export default {
         if (toggleButton) toggleButton.focus();
       }
     },
-    selectDate({ date, input = false }) {
+    selectDate({ date = 1, input = false }) {
       if (input && !this.selectedDateInput.length) return; // If input is true but there is no value then return.
-      const newDate = moment(input
-        ? new Date(this.selectedDateInput)
+      const inputDate = input ? resetFormat(this.selectedDateInput, this.dateFormat) : null;
+
+      if (input && !inputDate) throw new Error(`Incorrect date format typed. Format needed is ${this.dateFormat}`);
+      const newDate = moment(input && inputDate
+        ? new Date(inputDate)
         : new Date(this.current.year, this.current.month, date)
       );
 
@@ -160,7 +183,7 @@ export default {
         this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
       } else {
         // If date was not selected via the input then set the value.
-        this.selectedDateInput = newDate.format('MM/DD/YYYY');
+        this.selectedDateInput = newDate.format(this.dateFormat);
         this.toggleDatePicker(false);
       }
     },
