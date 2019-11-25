@@ -2,24 +2,24 @@
   <div
     id="app"
     class="v-datepicker"
-    :class="customClasses ? customClasses.wrapper : ''"
+    :class="customClasses.wrapper || ''"
   >
       <label
         id="datepickerLabel"
         for="datepicker"
         class="v-datepicker__input-label"
-        :class="customClasses ? customClasses.inputLabel : ''"
+        :class="customClasses.inputLabel || ''"
       >{{ labelText }}</label>
 
       <div
         class="v-datepicker__input-wrapper"
-        :class="customClasses ? customClasses.inputWrapper : ''"
+        :class="customClasses.inputWrapper || ''"
       >
         <input
           id="datepicker"
           type="text"
           class="v-datepicker__input"
-          :class="customClasses ? customClasses.input : ''"
+          :class="customClasses.input || ''"
           :placeholder="inputPlaceholder"
           aria-autocomplete="none"
           v-model="selectedDateInput"
@@ -28,7 +28,7 @@
         <button
           id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
-          :class="customClasses ? customClasses.toggleButton : ''"
+          :class="customClasses.toggleButton || ''"
           aria-describedby="datepickerLabel"
           :aria-label="buttonAriaLabel"
           @click="toggleDatePicker(!isDatePickerVisible)"
@@ -37,7 +37,7 @@
             :src="calendarIcon || defaultCalendarIcon"
             alt="calendar icon"
             class="v-datepicker__toggle-button-icon"
-            :class="customClasses ? customClasses.toggleButtonIcon : ''"
+            :class="customClasses.toggleButtonIcon || ''"
           >
         </button>
       </div>
@@ -98,6 +98,10 @@ export default {
       type: String,
       default: 'Date (mm/dd/yyyy):',
     },
+    initialValue: {
+      type: String,
+      default: null,
+    },
     inputPlaceholder: {
       type: String,
       default: null,
@@ -119,10 +123,8 @@ export default {
     },
     customClasses: {
       type: Object,
-      default: () => ({
-        wrapper: 'v-poo'
-      }),
-    }
+      default: () => ({}),
+    },
   },
   computed: {
     buttonAriaLabel() {
@@ -131,6 +133,12 @@ export default {
         : null;
       return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
     },
+  },
+  beforeMount() {
+    if (this.initialValue) {
+      this.selectedDateInput = this.initialValue;
+      this.selectDate({ input: true });
+    }
   },
   methods: {
     toggleDatePicker(isVisible) {
