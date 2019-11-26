@@ -1,7 +1,7 @@
 {
   "name": "vue-accessible-datepicker",
   "version": "0.1.6",
-  "main": "./dist/vue-accessible-datepicker.common.js",
+  "main": "./dist/vue-accessible-datepicker.min.js",
   "files": [
     "dist/*"
   ],
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --target lib --name vue-accessible-datepicker ./src/index.js",
+    "build": "vue-cli-service build --target wc --name vue-accessible-datepicker ./src/VueAccessibleDatepicker.vue",
     "lint": "vue-cli-service lint"
   },
   "keywords": [
