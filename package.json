@@ -1,12 +1,32 @@
 {
   "name": "vue-accessible-datepicker",
   "version": "0.1.0",
-  "private": true,
+  "main": "./dist/vue-accessible-datepicker.umd.min.js",
+  "files": [
+    "dist/*",
+    "src/*",
+    "public/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:hex-digital/vue-accessible-datepicker.git"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --target lib --name vue-accessible-datepicker ./src/index.js",
     "lint": "vue-cli-service lint"
   },
+  "keywords": [
+    "Vue",
+    "date-picker",
+    "accessible"
+  ],
+  "author": "yasmin@hexdigital.com",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hex-digital/vue-accessible-datepicker/issues"
+  },
+  "homepage": "https://github.com/hex-digital/vue-accessible-datepicker",
   "dependencies": {
     "core-js": "^3.3.2",
     "moment": "^2.24.0",
