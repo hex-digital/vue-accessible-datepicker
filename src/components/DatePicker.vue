@@ -7,7 +7,7 @@
   >
     <div
       class="v-datepicker__header"
-      :class="customClasses.datepickerHeader || ''"
+      :class="customClasses.datepickerHeaderWrapper || ''"
     >
       <a
         href
@@ -92,7 +92,7 @@
           v-for="(week, weekIndex) in calendar.weeks"
           :key="`week-${weekIndex}`"
           class="v-datepicker__week"
-          :class="customClasses.datepickerWee || ''"
+          :class="customClasses.datepickerWeek || ''"
         >
           <td
             v-for="(day, dayIndex) in week"

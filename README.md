@@ -1,14 +1,32 @@
 # Vue Accessible Datepicker
 
-**WARNING: vue-accessible-datepicker is at pre-alpha stage of development and may undergo significant changes.**
+**WARNING: vue-accessible-datepicker is at pre-alpha stage of development so there may be bugs and various changes made.**
 
 **Submit issues and feature requests [here](https://github.com/hex-digital/vue-accessible-datepicker/issues)**.
 
+---
+
 ## **Table of Contents**
+- [About](#about)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Props](#props)
+- [Roadmap](#roadmap)
 - [Development](#development)
 - [License](#license)
+
+---
+
+## **About**
+This date-picker is in the progress of becoming **_WCAG 2.1 AA Accessible_** (currently in pre-alpha stages).
+
+If you're curious, here's some information on how to meet WCAG 2.1 AA Accessibility:
+
+https://www.w3.org/WAI/WCAG21/quickref/?versions=2.1&currentsidebar=%23col_customize&showtechniques=144%2C145&levels=a%2Caaa#hiddensc
+
+To find all of the functionality that a date-picker should have, VueAccessibleDatepicker is based off of [this date picker](https://www.w3.org/TR/wai-aria-practices/examples/dialog-modal/datepicker-dialog.html) from [W3's website](https://www.w3.org/TR/wai-aria-practices/).
+
+---
 
 ## **Installation**
 
@@ -21,6 +39,8 @@ or if you prefer yarn
 ``` bash
 yarn add vue-accessible-datepicker
 ```
+
+---
 
 ## **Usage**
 
@@ -51,6 +71,7 @@ export default {
   ...
 };
 ```
+---
 
 ### **Props**
 | Prop               	| Type   	| Default              	| Description                                                                                	|
@@ -97,18 +118,51 @@ Available classes:
   - `datepickerFooter` - Footer wrapper with the close button.
   - `datepickerFooterButton`
 
+
+**Code example:**
+```html
+<vue-accessible-datepicker
+  :custom-classes="{
+    wrapper: 'custom-datepicker-wrapper-class',
+    datepickerChangeMonthButton: 'custom-datepicker-change-month-class',
+    toggleButtonIcon: 'toggle-me-class',
+  }"
+/>
+```
+
 #### `dateFormat`
+The formatting is taken from [MomentJS](https://momentjs.com).
+
+See the docs here https://momentjs.com/docs/#/displaying/format/.
+
+The formats accepted are:
+- `MM/DD/YYYY`
+- `MM-DD-YYYY`
+- `DD/MM/YYYY`
+- `DD-MM-YYYY`
+- `YYYY/MM/DD`
+- `YYYY-MM-DD`
+
+If `dateFormat` is not provided, it defaults to `MM/DD/YYYY`.
+
+If you type a different format of date than the `dateFormat` specified, there will be an error in the console.
+
+**Code example:**
+```html
+<vue-accessible-datepicker date-format="DD-MM-YYYY" />
+```
+
+---
+
+## **Roadmap**
+- Tests
+
 
 
 ## **Development**
-To begin development, run:
+TODO
 
-``` bash
-yarn install
-yarn dev
-```
 
-then navigate to `http://localhost:8080`
 
 ## **License**
-TODO
+This project is licensed under the Apache License 2.0 - see the LICENSE.md file for details.
