@@ -25,8 +25,7 @@
         @click.prevent="navigateMonth('previous')"
       >
         <img
-          :src="navigateMonthIcons && navigateMonthIcons.previous
-            ? navigateMonthIcons.previous : defaultBackArrowIcon"
+          :src="navigateMonthIcons.previous || defaultBackArrowIcon"
           :class="customClasses.datepickerBackArrow || ''"
           alt="back arrow"
           width="18"
@@ -53,8 +52,7 @@
         @click.prevent="navigateMonth('next')"
       >
         <img
-          :src="navigateMonthIcons && navigateMonthIcons.next
-            ? navigateMonthIcons.next : defaultNextArrowIcon"
+          :src="navigateMonthIcons.next || defaultNextArrowIcon"
           :class="customClasses.datepickerNextArrow || ''"
           alt="next arrow"
           width="18"
@@ -166,7 +164,7 @@ export default {
     // Arrow icons to navigate through the months.
     navigateMonthIcons: {
       type: Object,
-      default: null,
+      default: () => ({}),
     },
     // All dates before minDate are disabled.
     minDate: {
