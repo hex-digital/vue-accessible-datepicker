@@ -46,7 +46,7 @@ yarn add vue-accessible-datepicker
 
 ### **Global**
 
-You may install Vue Carousel globally:
+You may install the date-picker globally:
 
 ``` js
 import Vue from 'vue';
@@ -54,6 +54,7 @@ import VueAccessibleDatepicker from 'vue-accessible-datepicker';
 
 Vue.use(VueAccessibleDatepicker);
 ```
+
 This will make **&lt;vue-accessible-datepicker&gt;** available to all components within your Vue app.
 
 ### **Local**
