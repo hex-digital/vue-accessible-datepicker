@@ -1,6 +1,5 @@
 <template>
   <div
-    id="app"
     class="v-datepicker"
     :class="customClasses.wrapper || ''"
   >
