@@ -1,10 +1,10 @@
 import Vue from 'vue'
-import App from './App.vue'
+import VueAccessibleDatepicker from './VueAccessibleDatepicker.vue'
 
-Vue.use(App);
+Vue.use(VueAccessibleDatepicker);
 
 Vue.config.productionTip = false
 
 new Vue({
-  render: h => h(App),
+  render: h => h(VueAccessibleDatepicker),
 }).$mount('#app')

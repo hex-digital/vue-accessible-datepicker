@@ -69,7 +69,7 @@ import DatePicker from './components/DatePicker';
 import { resetFormat } from './helpers/date-formats';
 
 export default {
-  name: 'app',
+  name: 'VueAccessibleDatepicker',
   components: { DatePicker },
   data: () => ({
     defaultCalendarIcon,

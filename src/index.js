@@ -1,4 +1,9 @@
-import Vue from 'vue';
-import App from './App.vue'
+import VueAccessibleDatepicker from './VueAccessibleDatepicker.vue'
 
-export default Vue.component('vue-accessible-datepicker', App);
+const install = (Vue) => {
+  Vue.component('vue-accessible-datepicker', VueAccessibleDatepicker);
+};
+
+export default {
+  install
+};
