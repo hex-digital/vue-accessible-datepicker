@@ -7,7 +7,7 @@
   >
     <div
       class="v-datepicker__header"
-      :class="customClasses.datepickerHeader || ''"
+      :class="customClasses.datepickerHeaderWrapper || ''"
     >
       <a
         href
@@ -25,8 +25,7 @@
         @click.prevent="navigateMonth('previous')"
       >
         <img
-          :src="navigateMonthIcons && navigateMonthIcons.previous
-            ? navigateMonthIcons.previous : defaultBackArrowIcon"
+          :src="navigateMonthIcons.previous || defaultBackArrowIcon"
           :class="customClasses.datepickerBackArrow || ''"
           alt="back arrow"
           width="18"
@@ -53,8 +52,7 @@
         @click.prevent="navigateMonth('next')"
       >
         <img
-          :src="navigateMonthIcons && navigateMonthIcons.next
-            ? navigateMonthIcons.next : defaultNextArrowIcon"
+          :src="navigateMonthIcons.next || defaultNextArrowIcon"
           :class="customClasses.datepickerNextArrow || ''"
           alt="next arrow"
           width="18"
@@ -94,7 +92,7 @@
           v-for="(week, weekIndex) in calendar.weeks"
           :key="`week-${weekIndex}`"
           class="v-datepicker__week"
-          :class="customClasses.datepickerWee || ''"
+          :class="customClasses.datepickerWeek || ''"
         >
           <td
             v-for="(day, dayIndex) in week"
@@ -166,7 +164,7 @@ export default {
     // Arrow icons to navigate through the months.
     navigateMonthIcons: {
       type: Object,
-      default: null,
+      default: () => ({}),
     },
     // All dates before minDate are disabled.
     minDate: {

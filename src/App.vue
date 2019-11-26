@@ -95,33 +95,6 @@ export default {
       type: String,
       default: null,
     },
-    label: {
-      type: String,
-      default: null,
-    },
-    initialValue: {
-      type: String,
-      default: null,
-    },
-    inputPlaceholder: {
-      type: String,
-      default: null,
-    },
-    // Arrow icons to navigate through the months.
-    navigateMonthIcons: {
-      type: Object,
-      default: null,
-    },
-    // All dates before minDate are disabled.
-    minDate: {
-      type: Date,
-      default: null,
-    },
-    // All dates after maxDate are disabled.
-    maxDate: {
-      type: Date,
-      default: null,
-    },
     customClasses: {
       type: Object,
       default: () => ({}),
@@ -139,7 +112,35 @@ export default {
             'YYYY/MM/DD',
             'YYYY-MM-DD',
         ].indexOf(value) !== -1;
+      },
     },
+    initialValue: {
+      type: String,
+      default: null,
+    },
+    inputPlaceholder: {
+      type: String,
+      default: null,
+    },
+    // Text for the label
+    label: {
+      type: String,
+      default: null,
+    },
+    // All dates before minDate are disabled.
+    minDate: {
+      type: Date,
+      default: null,
+    },
+    // All dates after maxDate are disabled.
+    maxDate: {
+      type: Date,
+      default: null,
+    },
+    // Arrow icons to navigate through the months.
+    navigateMonthIcons: {
+      type: Object,
+      default: () => ({}),
     },
   },
   computed: {
