@@ -1,6 +1,6 @@
 # Vue Accessible Datepicker
 
-**WARNING: vue-accessible-datepicker is at pre-alpha stage of development so there may be bugs and various changes made.**
+⚠️**WARNING: vue-accessible-datepicker is at pre-alpha stage of development so there may be bugs and various changes made.** ⚠️
 
 **Submit issues and feature requests [here](https://github.com/hex-digital/vue-accessible-datepicker/issues)**.
 
@@ -18,7 +18,11 @@
 ---
 
 ### **About**
-This date-picker is in the progress of becoming **_WCAG 2.1 AA Accessible_** (currently in pre-alpha stages).
+VueAccessibleDatepicker is a fully customisable, AA accessible datepicker built in Vue, for Vue projects.
+
+![Screenshot of datepicker](/docs/img/calendar-bare-bones-screenshot.jpg)
+
+**_WCAG 2.1 AA Accessible_** - **work in progress - currently in pre-alpha stages.**
 
 If you're curious, here's some information on how to meet WCAG 2.1 AA Accessibility:
 
@@ -85,7 +89,7 @@ export default {
 | label              	| String 	| "Date (mm/dd/yyyy):" 	| "(mm/dd/yyyy)" changes depending on the dateFormat prop.                                   	            |
 | minDate            	| Date   	| null                 	| Every date before the minDate is disabled.                                                 	            |
 | maxDate            	| Date   	| null                 	| Every date after the maxDate is disabled.                                                  	            |
-| navigateMonthIcons 	| Object 	| {}                   	| Provide custom icons for the previous and next navigation arrows.                          	            |
+| navigateMonthIcons 	| Object 	| {}                   	| Provide custom icons for the previous and next navigation arrows. See [navigateMonthIcons](#navigateMonthIcons) for more info |
 | required 	          | Boolean | false                 | Boolean for if the input is required for the form it is used in.                          	            |
 | name 	              | String 	| null                  | Name for the input field                          	                                                    |
 
@@ -153,6 +157,21 @@ If you type a different format of date than the `dateFormat` specified, there wi
 **Code example:**
 ```html
 <vue-accessible-datepicker date-format="DD-MM-YYYY" />
+```
+
+---
+
+##### `navigateMonthIcons`
+Provide src of img or svgs through the `navigateMonthIcons` prop as an object with `next` and `previous` as the keys.
+
+**Code example:**
+```html
+<vue-accessible-datepicker
+  :navigate-month-icons="{
+    next: '/img/next-arrow.svg',
+    previous: '/img/previous-arrow.svg',
+  }"
+/>
 ```
 
 ---
