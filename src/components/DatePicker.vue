@@ -17,11 +17,12 @@
         class="v-datepicker__change-month-button"
         :class="{
           'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth,
-          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton
+          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton,
+          [customClasses.datepickerChangeMonthButtonDisabled]: monthIsSameMaxMonth && customClasses.datepickerChangeMonthButtonDisabled
         }"
         data-handler="previous"
         data-event="click"
-        @keyup.space.capture="navigateMonth('previous')"
+        @keydown.space.capture.prevent="navigateMonth('previous')"
         @click.prevent="navigateMonth('previous')"
       >
         <img
@@ -34,6 +35,7 @@
       <p
         id="current-month-year-header"
         aria-live="polite"
+        class="v-datepicker__month-text"
         :class="customClasses.datepickerHeader || ''"
       >{{ headerText }}</p>
       <a
@@ -42,13 +44,14 @@
         :disabled="monthIsSameMaxMonth"
         :class="{
           'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth,
-          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton
+          [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton,
+          [customClasses.datepickerChangeMonthButtonDisabled]: monthIsSameMaxMonth && customClasses.datepickerChangeMonthButtonDisabled
         }"
         :aria-label="`Next month, ${next.monthString} ${next.year}`"
         class="v-datepicker__change-month-button"
         data-handler="next"
         data-event="click"
-        @keyup.space.capture="navigateMonth('next')"
+        @keydown.space.capture.prevent="navigateMonth('next')"
         @click.prevent="navigateMonth('next')"
       >
         <img
@@ -106,16 +109,19 @@
               :id="isSelected(day.date) ? 'selectedDateElement' : ''"
               :aria-label="moment([day.year, day.month, day.date]).format('dddd, Do MMMM YYYY')"
               :ref="day.ref"
+              role="button"
               :class="{
                 'v-datepicker__day-button--selected': isSelected(day.date),
                 'v-datepicker__day-button--disabled': isBeforeMinDate(day.date) || isAfterMaxDate(day.date),
-                [customClasses.datepickerDayButton]: customClasses.datepickerDayButton
+                [customClasses.datepickerDayButton]: customClasses.datepickerDayButton,
+                [customClasses.datepickerDayButtonSelected]: isSelected(day.date) && customClasses.datepickerDayButtonSelected,
+                [customClasses.datepickerDayButtonDisabled]: (isBeforeMinDate(day.date) || isAfterMaxDate(day.date) && customClasses.datepickerDayButtonDisabled)
               }"
               :tabindex="day.focusable ? 0 : -1"
               :aria-selected="isSelected(day.date)"
               :aria-disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
               :disabled="isBeforeMinDate(day.date) || isAfterMaxDate(day.date)"
-              @click="$emit('pick-date', { date: day.date })"
+              @click.prevent="$emit('pick-date', { date: day.date })"
             >{{ day.date }}</button>
             <span
               v-else
@@ -131,7 +137,8 @@
         class="v-datepicker__footer-button"
         :class="customClasses.datepickerFooterButton || ''"
         aria-label="Close the calendar"
-        @click="$emit('close-datepicker')"
+        role="button"
+        @click.prevent="$emit('close-datepicker')"
       >Close</button>
     </div>
   </div>
@@ -608,11 +615,12 @@ $light-grey: #dbdbdb;
     display: flex;
     justify-content: space-between;
     margin-bottom: 1em;
-    padding: 0.5em 1em;
+    padding: 1em;
   }
 
   &__content {
     border-spacing: 0;
+    margin-bottom: 0;
     padding: 0.5em 0.5em 0 0.5em;
     width: 100%;
   }
@@ -620,6 +628,10 @@ $light-grey: #dbdbdb;
   &__weekday {
     padding-bottom: 0.5em;
     text-align: center;
+  }
+
+  &__month-text {
+    margin: 0;
   }
 
   &__change-month-button {
