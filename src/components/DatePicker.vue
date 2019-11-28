@@ -82,11 +82,11 @@
       <tbody
         class="v-datepicker__weeks"
         :class="customClasses.datepickerWeeks || ''"
-        @keyup.esc="handleEscapeKeyPress"
-        @keyup.left="handleLeftKeyPress($event)"
-        @keyup.right="handleRightKeyPress($event)"
-        @keyup.up="handleUpKeyPress($event)"
-        @keyup.down="handleDownKeyPress($event)"
+        @keyup.esc.prevent="handleEscapeKeyPress"
+        @keyup.left.prevent="handleLeftKeyPress($event)"
+        @keyup.right.prevent="handleRightKeyPress($event)"
+        @keydown.up.prevent="handleUpKeyPress($event)"
+        @keydown.down.prevent="handleDownKeyPress($event)"
       >
         <tr
           v-for="(week, weekIndex) in calendar.weeks"
@@ -619,6 +619,7 @@ $light-grey: #dbdbdb;
 
   &__weekday {
     padding-bottom: 0.5em;
+    text-align: center;
   }
 
   &__change-month-button {
@@ -639,6 +640,7 @@ $light-grey: #dbdbdb;
     background: none;
     border: none;
     cursor: pointer;
+    font-family: inherit;
     font-size: initial;
     padding: 0.75em;
     text-decoration: none;
@@ -673,6 +675,7 @@ $light-grey: #dbdbdb;
       background: none;
       border: 1px solid $light-grey;
       cursor: pointer;
+      font-family: inherit;
       font-size: initial;
       height: 2em;
       transition: opacity 0.3s ease;

@@ -33,7 +33,8 @@
           :class="customClasses.toggleButton || ''"
           aria-describedby="datepickerLabel"
           :aria-label="buttonAriaLabel"
-          @click="toggleDatePicker(!isDatePickerVisible)"
+          type="button"
+          @click.prevent="toggleDatePicker(!isDatePickerVisible)"
         >
           <img
             :src="calendarIcon || defaultCalendarIcon"
