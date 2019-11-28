@@ -3,7 +3,8 @@
   "version": "0.1.8",
   "main": "./dist/vue-accessible-datepicker.umd.min.js",
   "files": [
-    "dist/*"
+    "dist/*",
+    "docs/*"
   ],
   "repository": {
     "type": "git",

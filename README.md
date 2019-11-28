@@ -197,6 +197,7 @@ Provide src of img or svgs through the `navigateMonthIcons` prop as an object wi
 
 ### **Development**
 `yarn install`
+
 `yarn dev`
 
 
