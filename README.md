@@ -110,6 +110,7 @@ Available classes:
   - `datepickerWrapper`
   - `datepickerHeaderWrapper`
   - `datepickerChangeMonthButton` - for both next and previous buttons.
+  - `datepickerChangeMonthButtonDisabled` - Disabled state of `datepickerChangeMonthButton` element.
   - `datepickerBackArrow` - for the icon itself.
   - `datepickerHeader`
   - `datepickerNextArrow` - for the icon itself.
@@ -120,6 +121,8 @@ Available classes:
   - `datepickerWeeks` - On the `<tbody>` element.
   - `datepickerWeek` - On the `<tr>` element, wraps each week.
   - `datepickerDay` - On the `<td>` element, wraps each day button.
+  - `datepickerDayButtonSelected` - Selected state of `datepickerDay` `td` element.
+  - `datepickerDayButtonDisabled` - Disabled state of `datepickerDay` `td` element.
   - `datepickerDayButton` - On the `<button>` in each `td`.
   - `datepickerFillerDate` - On each blank `<td>` to make each month start on the correct day of the week.
   - `datepickerFooter` - Footer wrapper with the close button.
