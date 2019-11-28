@@ -16,9 +16,9 @@
         :aria-label="`Previous month, ${previous.monthString} ${previous.year}`"
         class="v-datepicker__change-month-button"
         :class="{
-          'v-datepicker__change-month-button--disabled': monthIsSameMaxMonth,
+          'v-datepicker__change-month-button--disabled': monthIsSameMinMonth,
           [customClasses.datepickerChangeMonthButton]: customClasses.datepickerChangeMonthButton,
-          [customClasses.datepickerChangeMonthButtonDisabled]: monthIsSameMaxMonth && customClasses.datepickerChangeMonthButtonDisabled
+          [customClasses.datepickerChangeMonthButtonDisabled]: monthIsSameMinMonth && customClasses.datepickerChangeMonthButtonDisabled
         }"
         data-handler="previous"
         data-event="click"
