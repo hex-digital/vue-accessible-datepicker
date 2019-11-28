@@ -438,6 +438,7 @@ export default {
     handleUpKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       const isAtBeginningOfMonth = (currentFocusedDate - 7) < this.firstDateOfMonth;
       const previousWeekDate = this.getFullDate(currentFocusedDate)
         .subtract(1, 'week').date();
@@ -462,6 +463,7 @@ export default {
     handleDownKeyPress(event) {
       // Get the date from the event target to find the current focused date.
       const currentFocusedDate = parseInt(event.target.innerText);
+      this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       const isAtEndOfMonth = (currentFocusedDate + 7) > this.current.daysInMonth;
       const nextWeekDate = this.getFullDate(currentFocusedDate)
         .add(1, 'week').date();
