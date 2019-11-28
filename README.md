@@ -166,4 +166,10 @@ TODO
 
 
 ## **License**
-This project is licensed under the Apache License 2.0 - see the LICENSE.md file for details.
+This project is licensed under MIT - see [LICENSE.md](https://github.com/hex-digital/vue-accessible-datepicker/blob/master/LICENSE) for details.
+
+---
+
+© 2019 Hex Digital.
+
+[hexdigital.com](https://hexdigital.com/)
