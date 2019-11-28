@@ -63,7 +63,7 @@
 
 <script>
 import moment from 'moment';
-import defaultCalendarIcon from './assets/calendar.svg'
+import defaultCalendarIcon from '@img/calendar.svg'
 import DatePicker from './components/DatePicker';
 import { resetFormat } from './helpers/date-formats';
 
@@ -241,7 +241,7 @@ export default {
 
 <style lang="scss">
 .v-datepicker {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit;
 
   &__input-label {
     display: block;
