@@ -140,8 +140,8 @@
 <script>
 import moment from 'moment';
 import { directive as onClickaway } from 'vue-clickaway';
-import defaultNextArrowIcon from '../assets/next-arrow.svg'
-import defaultBackArrowIcon from '../assets/back-arrow.svg'
+import defaultNextArrowIcon from '@img/next-arrow.svg'
+import defaultBackArrowIcon from '@img/back-arrow.svg'
 import { dayNames, dayNamesLetters } from '../helpers/date-formats';
 import { getFullDate } from '../helpers/dates';
 
@@ -598,12 +598,8 @@ $light-grey: #dbdbdb;
   &__picker {
     background-color: white;
     border: 1px solid $light-grey;
-    font-family: Arial, Helvetica, sans-serif;
-
-    @media only screen and (min-width: 40em) {
-      max-width: 23em;
-    }
-
+    font-family: inherit;
+    width: fit-content;
   }
 
   &__header {

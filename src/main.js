@@ -1,7 +1,5 @@
 import Vue from 'vue'
-import VueAccessibleDatepicker from './VueAccessibleDatepicker.vue'
-
-Vue.use(VueAccessibleDatepicker);
+import VueAccessibleDatepicker from './VueAccessibleDatepicker.vue';
 
 Vue.config.productionTip = false
 
