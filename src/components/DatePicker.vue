@@ -617,14 +617,23 @@ $light-grey: #dbdbdb;
     display: flex;
     justify-content: space-between;
     margin-bottom: 1em;
-    padding: 1em;
+    padding: 1em 0;
   }
 
   &__content {
     border-spacing: 0;
+    display: block;
     margin-bottom: 0;
-    padding: 0.5em 0.5em 0 0.5em;
-    width: 100%;
+    padding: 0.2em;
+  }
+
+  &__weekdays-wrapper, &__weeks {
+    display: block;
+  }
+
+  &__weekdays-row, &__week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
   }
 
   &__weekday {
@@ -638,6 +647,7 @@ $light-grey: #dbdbdb;
 
   &__change-month-button {
     transition: opacity 0.3s ease;
+    padding: 0 1em;
 
     &:hover {
       opacity: 0.4;
