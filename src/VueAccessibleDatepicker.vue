@@ -268,6 +268,7 @@ export default {
 
   &__input {
     box-sizing: border-box;
+    font-family: inherit;
     font-size: 1em;
     padding: 0.5em;
   }
