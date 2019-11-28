@@ -19,6 +19,9 @@
           type="text"
           class="v-datepicker__input"
           :class="customClasses.input || ''"
+          :required="required"
+          :name="name"
+          :aria-required="required"
           :placeholder="inputPlaceholder"
           aria-autocomplete="none"
           v-model="selectedDateInput"
@@ -140,6 +143,14 @@ export default {
     navigateMonthIcons: {
       type: Object,
       default: () => ({}),
+    },
+    required: {
+      type: Boolean,
+      default: false,
+    },
+    name: {
+      type: String,
+      default: null,
     },
   },
   computed: {

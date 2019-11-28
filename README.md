@@ -17,7 +17,7 @@
 
 ---
 
-## **About**
+### **About**
 This date-picker is in the progress of becoming **_WCAG 2.1 AA Accessible_** (currently in pre-alpha stages).
 
 If you're curious, here's some information on how to meet WCAG 2.1 AA Accessibility:
@@ -28,7 +28,7 @@ To find all of the functionality that a date-picker should have, VueAccessibleDa
 
 ---
 
-## **Installation**
+### **Installation**
 
 ``` bash
 npm install vue-accessible-datepicker
@@ -42,9 +42,9 @@ yarn add vue-accessible-datepicker
 
 ---
 
-## **Usage**
+### **Usage**
 
-### **Global**
+#### **Global**
 
 You may install the date-picker globally:
 
@@ -57,7 +57,7 @@ Vue.use(VueAccessibleDatepicker);
 
 This will make **&lt;vue-accessible-datepicker&gt;** available to all components within your Vue app.
 
-### **Local**
+#### **Local**
 
 Include the datepicker directly into your component using import:
 
@@ -74,20 +74,22 @@ export default {
 ```
 ---
 
-### **Props**
-| Prop               	| Type   	| Default              	| Description                                                                                	|
-|--------------------	|--------	|----------------------	|--------------------------------------------------------------------------------------------	|
-| calendarIcon       	| String 	| Default Icon         	| Icon for the button to open the date-picker. A default icon appears if none is provided.   	|
-| customClasses      	| Object 	| {}                   	| Provide classes to override the default styles. See [customClasses](#customClasses) for more info.        	|
+#### **Props**
+| Prop               	| Type   	| Default              	| Description                                                                                	            |
+|--------------------	|--------	|----------------------	|---------------------------------------------------------------------------------------------------------|
+| calendarIcon       	| String 	| Default Icon         	| Icon for the button to open the date-picker. A default icon appears if none is provided.   	            |
+| customClasses      	| Object 	| {}                   	| Provide classes to override the default styles. See [customClasses](#customClasses) for more info.      |
 | dateFormat         	| String 	| "MM/DD/YYYY"          | The format of the date to use for the input and calendar. See [dateFormat](#dateFormat) for more info. 	|
-| initialValue       	| String 	| null                 	| Provide an initial value to the input if needed.                                           	|
-| inputPlaceholder   	| String 	| null                 	| Placeholder for the input.                                                                 	|
-| label              	| String 	| "Date (mm/dd/yyyy):" 	| "(mm/dd/yyyy)" changes depending on the dateFormat prop.                                   	|
-| minDate            	| Date   	| null                 	| Every date before the minDate is disabled.                                                 	|
-| maxDate            	| Date   	| null                 	| Every date after the maxDate is disabled.                                                  	|
-| navigateMonthIcons 	| Object 	| {}                   	| Provide custom icons for the previous and next navigation arrows.                          	|
+| initialValue       	| String 	| null                 	| Provide an initial value to the input if needed.                                           	            |
+| inputPlaceholder   	| String 	| null                 	| Placeholder for the input.                                                                 	            |
+| label              	| String 	| "Date (mm/dd/yyyy):" 	| "(mm/dd/yyyy)" changes depending on the dateFormat prop.                                   	            |
+| minDate            	| Date   	| null                 	| Every date before the minDate is disabled.                                                 	            |
+| maxDate            	| Date   	| null                 	| Every date after the maxDate is disabled.                                                  	            |
+| navigateMonthIcons 	| Object 	| {}                   	| Provide custom icons for the previous and next navigation arrows.                          	            |
+| required 	          | Boolean | false                 | Boolean for if the input is required for the form it is used in.                          	            |
+| name 	              | String 	| null                  | Name for the input field                          	                                                    |
 
-#### `customClasses`
+##### `customClasses`
 Provide custom classes in an object via the prop `customClasses`.
 
 The aim of this prop is to make the calendar as customisable as possible.
@@ -131,7 +133,7 @@ Available classes:
 />
 ```
 
-#### `dateFormat`
+##### `dateFormat`
 The formatting is taken from [MomentJS](https://momentjs.com).
 
 See the docs here https://momentjs.com/docs/#/displaying/format/.
@@ -155,14 +157,28 @@ If you type a different format of date than the `dateFormat` specified, there wi
 
 ---
 
-## **Roadmap**
+### **Example**
+```html
+<vue-accessible-datepicker
+  name="start-date"
+  required
+  date-format="DD-MM-YYYY"
+  :custom-classes="{
+    wrapper: 'v-wrapper',
+    input: 'v-input'
+  }"
+/>
+```
+
+
+### **Roadmap**
 - Tests
 
 
 
-## **Development**
-TODO
-
+### **Development**
+`yarn install`
+`yarn dev`
 
 
 ## **License**
