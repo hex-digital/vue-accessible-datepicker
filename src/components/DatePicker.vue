@@ -666,7 +666,7 @@ $light-grey: #dbdbdb;
     cursor: pointer;
     font-family: inherit;
     font-size: initial;
-    padding: 0.75em 0.2em;
+    padding: 0.5em;
     text-decoration: none;
     transition-property: background-color, color;
     transition-timing-function: ease;
