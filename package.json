@@ -2,6 +2,7 @@
   "name": "vue-accessible-datepicker",
   "version": "0.1.12",
   "main": "./dist/vue-accessible-datepicker.umd.min.js",
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "files": [
     "dist/*",
     "docs/*"
@@ -20,7 +21,7 @@
     "date-picker",
     "accessible"
   ],
-  "author": "yasmin@hexdigital.com",
+  "author": "Yasmin Green <yasmin@hexdigital.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/hex-digital/vue-accessible-datepicker/issues"
