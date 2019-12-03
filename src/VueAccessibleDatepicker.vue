@@ -69,7 +69,8 @@
 import moment from 'moment';
 import defaultCalendarIcon from '@img/calendar.svg'
 import DatePicker from './components/DatePicker';
-import { resetFormat } from './helpers/date-formats';
+import { resetFormat, getMonth, daysInMonth, getYear } from './helpers/date-formats';
+const today = new Date();
 
 export default {
   name: 'VueAccessibleDatepicker',
@@ -79,9 +80,9 @@ export default {
     isDatePickerVisible: false,
     selectedDate: null,
     current: {
-      month: moment().get('month'), // Months are 0 indexed.
-      year: moment().get('year'),
-      daysInMonth: moment().daysInMonth(),
+      month: getMonth(today), // Months are 0 indexed.
+      year: getYear(today),
+      daysInMonth: daysInMonth(today),
     },
     previousMonth: {
       monthString: moment().subtract(1, 'month').format('MMMM'),

@@ -149,8 +149,7 @@ import moment from 'moment';
 import { directive as onClickaway } from 'vue-clickaway';
 import defaultNextArrowIcon from '@img/next-arrow.svg'
 import defaultBackArrowIcon from '@img/back-arrow.svg'
-import { dayNames, dayNamesLetters } from '../helpers/date-formats';
-import { getFullDate } from '../helpers/dates';
+import { dddd as dayNames, d as dayNamesLetters, getDayInWeek } from '../helpers/date-formats';
 
 export default {
   name: 'DatePicker',
@@ -274,7 +273,7 @@ export default {
           weeks[week - 1].push({ // Add the date to the correct week in the weeks array.
             date: isBlankDate ? null : correctDate,
             ref: this.getRefString(correctDate),
-            day: isBlankDate ? null : fullDate.format('dddd'),
+            day: isBlankDate ? null : getDayInWeek(fullDate),
             month: isBlankDate ? null : this.current.month,
             year: isBlankDate ? null : this.current.year,
             focusable: !(this.isBeforeMinDate(correctDate) || this.isAfterMaxDate(correctDate)),
@@ -375,7 +374,7 @@ export default {
      * @returns {String}
      */
     getFullDate(date) {
-      return getFullDate({ year: this.current.year, month: this.current.month, date });
+      return new Date([this.current.year, this.current.month, date]);
     },
     /**
      * Pressing the escape key closes the datepicker and moves focus to the input field.
@@ -582,7 +581,7 @@ export default {
       const currentFocusedDate = parseInt(event.target.innerText);
       this.$refs[this.getRefString(currentFocusedDate)][0].setAttribute('tabindex', -1);
       const fullDate = this.getFullDate(currentFocusedDate);
-      const nextDate = this.getFullDate(currentFocusedDate)[actions.perimeterFunction]('week');
+      const nextDate = this.getFullDate(currentFocusedDate)[actions.perimeterFunction]('week'); // TODO: update.
 
       if (!fullDate.isSame(nextDate, 'month')) this.navigateMonth(actions.direction);
 
