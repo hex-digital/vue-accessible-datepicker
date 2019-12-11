@@ -1,8 +1,10 @@
 {
   "name": "vue-accessible-datepicker",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "main": "./dist/vue-accessible-datepicker.umd.min.js",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "files": [
     "dist/*",
     "docs/*"
