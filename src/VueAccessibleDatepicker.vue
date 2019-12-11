@@ -198,10 +198,15 @@ export default {
 
       this.selectedDate = newDate;
       if (input) {
-        this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+        if (newDate._isValid) {
+          this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+        } else {
+          this.updateCurrentDates({ year: moment().get('year'), month: moment().get('month') });
+        }
       } else {
         // If date was not selected via the input then set the value.
         this.selectedDateInput = newDate.format(this.dateFormat);
+        this.$emit('date-selected', this.selectedDate);
         this.toggleDatePicker(false);
       }
     },
