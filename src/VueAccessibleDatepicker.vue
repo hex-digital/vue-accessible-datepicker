@@ -8,6 +8,7 @@
             class="v-datepicker__input-label"
             :class="customClasses.inputLabel || ''"
           >{{ labelText }}</label>
+          <slot class="v-datepicker__input-error" :class="customClasses.inputError || ''" />
           <input
             id="datepicker"
             type="text"
@@ -169,7 +170,7 @@ export default {
   },
   watch: {
     selectedDateInput(oldValue, newValue) {
-      if (oldValue !== newValue) this.$emit('input-change', newValue);
+      if (oldValue !== newValue) this.$emit('input-change', oldValue);
     }
   },
   methods: {
