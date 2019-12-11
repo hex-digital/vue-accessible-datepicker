@@ -11,7 +11,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Props](#props)
-- [Input Events](#InputEvents)
+- [Events](#Events)
 - [Roadmap](#roadmap)
 - [Development](#development)
 - [License](#license)
@@ -182,10 +182,11 @@ Provide src of img or svgs through the `navigateMonthIcons` prop as an object wi
 
 ---
 
-### **InputEvents**
-- On blur - the component emits "input-blur" with the value of the input.
-- On focus - the component emits "input-focus" with the value of the input.
-- On change - the component emits "input-change" with the value of the input.
+### **Events**
+- Input - On blur - the component emits "input-blur" with the value of the input.
+- Input - On focus - the component emits "input-focus" with the value of the input.
+- Input - On change - the component emits "input-change" with the value of the input.
+- Date selected via date-picker - component emits "date-selected" with the selected date.
 
 ---
 ### **Slot**
