@@ -1,32 +1,28 @@
 <template>
-  <div
-    class="v-datepicker"
-    :class="customClasses.wrapper || ''"
-  >
-      <label
-        id="datepickerLabel"
-        for="datepicker"
-        class="v-datepicker__input-label"
-        :class="customClasses.inputLabel || ''"
-      >{{ labelText }}</label>
-
-      <div
-        class="v-datepicker__input-wrapper"
-        :class="customClasses.inputWrapper || ''"
-      >
-        <input
-          id="datepicker"
-          type="text"
-          class="v-datepicker__input"
-          :class="customClasses.input || ''"
-          :required="required"
-          :name="name"
-          :aria-required="required"
-          :placeholder="inputPlaceholder"
-          aria-autocomplete="none"
-          v-model="selectedDateInput"
-          @blur="selectDate({ input: true })"
-        >
+  <div class="v-datepicker" :class="customClasses.wrapper || ''">
+      <div class="v-datepicker__input-container" :class="customClasses.inputContainer || ''">
+        <div class="v-datepicker__input-wrapper" :class="customClasses.inputWrapper || ''">
+          <label
+            id="datepickerLabel"
+            for="datepicker"
+            class="v-datepicker__input-label"
+            :class="customClasses.inputLabel || ''"
+          >{{ labelText }}</label>
+          <input
+            id="datepicker"
+            type="text"
+            class="v-datepicker__input"
+            :class="customClasses.input || ''"
+            :required="required"
+            :name="name"
+            :aria-required="required"
+            :placeholder="inputPlaceholder"
+            aria-autocomplete="none"
+            v-model="selectedDateInput"
+            @blur="handleInputBlur"
+            @focus="$emit('input-focus', selectedDate)"
+          >
+        </div>
         <button
           id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
@@ -171,8 +167,17 @@ export default {
       this.selectDate({ input: true });
     }
   },
+  watch: {
+    selectedDateInput(oldValue, newValue) {
+      if (oldValue !== newValue) this.$emit('input-change', newValue);
+    }
+  },
   methods: {
     resetFormat,
+    handleInputBlur() {
+      this.selectDate({ input: true });
+      this.$emit('input-blur', this.selectedDate);
+    },
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
@@ -260,8 +265,8 @@ export default {
     margin-bottom: 0.5em;
   }
 
-  &__input-wrapper {
-    align-items: center;
+  &__input-container {
+    align-items: flex-end;
     display: flex;
     margin-bottom: 0.5em;
   }
