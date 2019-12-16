@@ -154,7 +154,7 @@ export default {
   computed: {
     buttonAriaLabel() {
       const selectedDate = this.selectedDate
-        ? this.selectedDate.format('dddd MMMM Do, YYYY')
+        ? moment(this.selectedDate).format('dddd MMMM Do, YYYY')
         : null;
       return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
     },
@@ -165,7 +165,6 @@ export default {
   beforeMount() {
     if (this.initialValue) {
       this.selectedDateInput = this.initialValue;
-      this.selectDate({ input: true });
     }
   },
   watch: {
@@ -176,8 +175,8 @@ export default {
   methods: {
     resetFormat,
     handleInputBlur() {
+      this.$emit('input-blur', this.selectedDateInput);
       this.selectDate({ input: true });
-      this.$emit('input-blur', this.selectedDate);
     },
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
@@ -187,26 +186,25 @@ export default {
       }
     },
     selectDate({ date = 1, input = false }) {
-      if (input && !this.selectedDateInput.length) return; // If input is true but there is no value then return.
       const inputDate = input ? resetFormat(this.selectedDateInput, this.dateFormat) : null;
 
-      if (input && !inputDate) throw new Error(`Incorrect date format typed. Format needed is ${this.dateFormat}`);
       const newDate = moment(input && inputDate
         ? new Date(inputDate)
         : new Date(this.current.year, this.current.month, date)
       );
 
-      this.selectedDate = newDate;
       if (input) {
-        if (newDate._isValid) {
+        if (newDate._isValid && this.selectedDateInput.length === 10) {
           this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+          this.selectedDate = newDate.format(this.dateFormat);
         } else {
           this.updateCurrentDates({ year: moment().get('year'), month: moment().get('month') });
         }
       } else {
         // If date was not selected via the input then set the value.
         this.selectedDateInput = newDate.format(this.dateFormat);
-        this.$emit('date-selected', this.selectedDate);
+        this.selectedDate = newDate.format(this.dateFormat);
+        this.$emit('date-selected', this.selectedDateInput);
         this.toggleDatePicker(false);
       }
     },
