@@ -66,7 +66,7 @@
 import moment from 'moment';
 import defaultCalendarIcon from '@img/calendar.svg'
 import DatePicker from './components/DatePicker';
-import { resetFormat, getMonth, daysInMonth, getYear } from './helpers/date-formats';
+import { resetFormat, getMonth, daysInMonth, getYear, subtract } from './helpers/date-formats';
 const today = new Date();
 
 export default {
@@ -174,6 +174,8 @@ export default {
     }
   },
   methods: {
+    subtract,
+    moment,
     resetFormat,
     handleInputBlur() {
       this.$emit('input-blur', this.selectedDateInput);

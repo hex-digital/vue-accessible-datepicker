@@ -45,27 +45,29 @@ export function daysInMonth (month, year) {
  * @returns {Date}
  */
 export function subtract(date, number, denomination) {
-  let daysToSubtract = 0;
+  let newDate = new Date(date);
   switch (denomination) {
+  case 'day':
   case 'days':
-    daysToSubtract = number;
+    newDate.setDate(newDate.getDate() - number);
     break;
+  case 'week':
   case 'weeks':
-    daysToSubtract = number * 7;
+    newDate.setDate(newDate.getDate() - (number * 7));
     break;
+  case 'month':
   case 'months':
-    daysToSubtract = daysInMonth(date.getMonth(), date.getFullYear()) * number;
+    newDate.setMonth(newDate.getMonth() - number);
     break;
+  case 'year':
   case 'years':
-    daysToSubtract = ((number * 7) * 4) * 12;
+    newDate.setYear(newDate.getFullYear() - number);
     break;
   default:
     break;
   }
 
-  const dateToSubtract = new Date(date);
-  dateToSubtract.setDate(dateToSubtract.getDate() - daysToSubtract);
-  return new Date(dateToSubtract);
+  return new Date(newDate);
 }
 
 /**
