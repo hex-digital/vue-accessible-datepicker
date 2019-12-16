@@ -165,7 +165,7 @@ export default {
   beforeMount() {
     if (this.initialValue) {
       this.selectedDateInput = this.initialValue;
-      this.selectDate({ input: true });
+      // this.selectDate({ input: true });
     }
   },
   watch: {
@@ -176,7 +176,6 @@ export default {
   methods: {
     resetFormat,
     handleInputBlur() {
-      this.selectDate({ input: true });
       this.$emit('input-blur', this.selectedDate);
     },
     toggleDatePicker(isVisible) {
@@ -196,16 +195,17 @@ export default {
         : new Date(this.current.year, this.current.month, date)
       );
 
-      this.selectedDate = newDate;
       if (input) {
         if (newDate._isValid) {
           this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
         } else {
           this.updateCurrentDates({ year: moment().get('year'), month: moment().get('month') });
         }
+        this.selectedDate = newDate.format(this.dateFormat);
       } else {
         // If date was not selected via the input then set the value.
         this.selectedDateInput = newDate.format(this.dateFormat);
+        console.log(this.selectedDateInput);
         this.$emit('date-selected', this.selectedDate);
         this.toggleDatePicker(false);
       }
