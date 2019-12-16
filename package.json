@@ -28,6 +28,7 @@
   "homepage": "https://github.com/hex-digital/vue-accessible-datepicker",
   "dependencies": {
     "core-js": "^3.3.2",
+    "date-and-time": "^0.11.1",
     "moment": "^2.24.0",
     "vue": "^2.6.10",
     "vue-clickaway": "^2.2.2"
