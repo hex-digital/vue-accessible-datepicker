@@ -187,7 +187,7 @@ export default {
       default: null,
     },
     selectedDate: {
-      type: Object,
+      type: String,
       default: null,
     },
     current: {

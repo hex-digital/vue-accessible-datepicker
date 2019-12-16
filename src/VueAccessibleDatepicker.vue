@@ -1,32 +1,29 @@
 <template>
-  <div
-    class="v-datepicker"
-    :class="customClasses.wrapper || ''"
-  >
-      <label
-        id="datepickerLabel"
-        for="datepicker"
-        class="v-datepicker__input-label"
-        :class="customClasses.inputLabel || ''"
-      >{{ labelText }}</label>
-
-      <div
-        class="v-datepicker__input-wrapper"
-        :class="customClasses.inputWrapper || ''"
-      >
-        <input
-          id="datepicker"
-          type="text"
-          class="v-datepicker__input"
-          :class="customClasses.input || ''"
-          :required="required"
-          :name="name"
-          :aria-required="required"
-          :placeholder="inputPlaceholder"
-          aria-autocomplete="none"
-          v-model="selectedDateInput"
-          @blur="selectDate({ input: true })"
-        >
+  <div class="v-datepicker" :class="customClasses.wrapper || ''">
+      <div class="v-datepicker__input-container" :class="customClasses.inputContainer || ''">
+        <div class="v-datepicker__input-wrapper" :class="customClasses.inputWrapper || ''">
+          <label
+            id="datepickerLabel"
+            for="datepicker"
+            class="v-datepicker__input-label"
+            :class="customClasses.inputLabel || ''"
+          >{{ labelText }}</label>
+          <slot class="v-datepicker__input-error" :class="customClasses.inputError || ''" />
+          <input
+            id="datepicker"
+            type="text"
+            class="v-datepicker__input"
+            :class="customClasses.input || ''"
+            :required="required"
+            :name="name"
+            :aria-required="required"
+            :placeholder="inputPlaceholder"
+            aria-autocomplete="none"
+            v-model="selectedDateInput"
+            @blur="handleInputBlur"
+            @focus="$emit('input-focus', selectedDate)"
+          >
+        </div>
         <button
           id="datepicker-toggle-button"
           class="v-datepicker__toggle-button"
@@ -158,7 +155,7 @@ export default {
   computed: {
     buttonAriaLabel() {
       const selectedDate = this.selectedDate
-        ? this.selectedDate.format('dddd MMMM Do, YYYY')
+        ? moment(this.selectedDate).format('dddd MMMM Do, YYYY')
         : null;
       return `Choose date${selectedDate ? `, selected date is ${selectedDate}` : ''}`
     },
@@ -169,11 +166,19 @@ export default {
   beforeMount() {
     if (this.initialValue) {
       this.selectedDateInput = this.initialValue;
-      this.selectDate({ input: true });
+    }
+  },
+  watch: {
+    selectedDateInput(oldValue, newValue) {
+      if (oldValue !== newValue) this.$emit('input-change', oldValue);
     }
   },
   methods: {
     resetFormat,
+    handleInputBlur() {
+      this.$emit('input-blur', this.selectedDateInput);
+      this.selectDate({ input: true });
+    },
     toggleDatePicker(isVisible) {
       this.isDatePickerVisible = isVisible;
       if (!this.isDatePickerVisible) {
@@ -182,21 +187,25 @@ export default {
       }
     },
     selectDate({ date = 1, input = false }) {
-      if (input && !this.selectedDateInput.length) return; // If input is true but there is no value then return.
       const inputDate = input ? resetFormat(this.selectedDateInput, this.dateFormat) : null;
 
-      if (input && !inputDate) throw new Error(`Incorrect date format typed. Format needed is ${this.dateFormat}`);
       const newDate = moment(input && inputDate
         ? new Date(inputDate)
         : new Date(this.current.year, this.current.month, date)
       );
 
-      this.selectedDate = newDate;
       if (input) {
-        this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+        if (newDate._isValid && this.selectedDateInput.length === 10) {
+          this.updateCurrentDates({ year: newDate.get('year'), month: newDate.get('month') });
+          this.selectedDate = newDate.format(this.dateFormat);
+        } else {
+          this.updateCurrentDates({ year: moment().get('year'), month: moment().get('month') });
+        }
       } else {
         // If date was not selected via the input then set the value.
         this.selectedDateInput = newDate.format(this.dateFormat);
+        this.selectedDate = newDate.format(this.dateFormat);
+        this.$emit('date-selected', this.selectedDateInput);
         this.toggleDatePicker(false);
       }
     },
@@ -261,8 +270,8 @@ export default {
     margin-bottom: 0.5em;
   }
 
-  &__input-wrapper {
-    align-items: center;
+  &__input-container {
+    align-items: flex-end;
     display: flex;
     margin-bottom: 0.5em;
   }

@@ -11,6 +11,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Props](#props)
+- [Events](#Events)
 - [Roadmap](#roadmap)
 - [Development](#development)
 - [License](#license)
@@ -101,8 +102,10 @@ The aim of this prop is to make the calendar as customisable as possible.
 Available classes:
 - Classes for the wrapper container with input and button:
   - `wrapper`
-  - `inputLabel`
+  - `inputContainer`
   - `inputWrapper`
+  - `inputLabel`
+  - `inputError`
   - `input`
   - `toggleButton`
   - `toggleButtonIcon`
@@ -176,6 +179,18 @@ Provide src of img or svgs through the `navigateMonthIcons` prop as an object wi
   }"
 />
 ```
+
+---
+
+### **Events**
+- Input - On blur - the component emits "input-blur" with the value of the input.
+- Input - On focus - the component emits "input-focus" with the value of the input.
+- Input - On change - the component emits "input-change" with the value of the input.
+- Date selected via date-picker - component emits "date-selected" with the selected date.
+
+---
+### **Slot**
+There is a single slot with the classname of `v-datepicker__input-error` for any form error messages you want to inject and style.
 
 ---
 
