@@ -206,20 +206,7 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      // Get the first element to focus on when mounted. Either the selected date, or first available focusable date.
-      const selectedElement = document.getElementById('selectedDateElement');
-      const avaliableFocusableDates = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
-
-      if (avaliableFocusableDates && avaliableFocusableDates.length) {
-        avaliableFocusableDates.forEach((date, index) => {
-          if (index === 0) {
-            this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : this.getRefString(date.innerText);
-            selectedElement ? selectedElement.focus() : date.focus();
-          } else {
-            date.setAttribute('tabindex', -1);
-          }
-        });
-      }
+      this.oneFocusableDate();
 
       document.addEventListener('keydown', (event) => this.handleKeyPress(event));
     });
@@ -267,7 +254,8 @@ export default {
       for (let date = this.firstDateOfMonth; date <= offsetTotalDates; date += 1) {
         if (date <= (week * daysInWeek)) {
           const isBlankDate = date <= this.firstDayInMonth; // Start the month at the correct day in the week.
-          const correctDate = date - this.firstDayInMonth; // Remove the offset added at the start.
+          let correctDate = date - this.firstDayInMonth;
+          correctDate = correctDate > 0 ? correctDate : null; // Remove the offset added at the start.
           const fullDate = this.getFullDate(correctDate);
 
           if (!weeks[week - 1]) return {weeks};
@@ -277,7 +265,7 @@ export default {
             day: isBlankDate ? null : fullDate.format('dddd'),
             month: isBlankDate ? null : this.current.month,
             year: isBlankDate ? null : this.current.year,
-            focusable: !(this.isBeforeMinDate(correctDate) || this.isAfterMaxDate(correctDate)),
+            focusable: correctDate && (!(this.isBeforeMinDate(correctDate) || this.isAfterMaxDate(correctDate))),
           })
         }
 
@@ -288,6 +276,22 @@ export default {
   },
   methods: {
     moment,
+    oneFocusableDate() {
+      // Ensure there is only one focusable date
+      const selectedElement = document.getElementById('selectedDateElement');
+      const availableFocusableDates = document.querySelectorAll('.v-datepicker__day-button:not([tabindex="-1"])');
+
+      if (availableFocusableDates) {
+        availableFocusableDates.forEach((date, index) => {
+          if (index === 0) {
+            this.currentFocusedRef = selectedElement ? this.getRefString(selectedElement.innerText) : this.getRefString(date.innerText);
+            selectedElement ? selectedElement.focus() : date.focus();
+          } else {
+            date.setAttribute('tabindex', -1);
+          }
+        });
+      }
+    },
     closeDatepicker() {
       this.$emit('close-datepicker');
     },
@@ -368,7 +372,7 @@ export default {
      * @returns {String}
      */
     getRefString(number) {
-      return `date-${number}`;
+      return number ? `date-${number}` : null;
     },
     /**
      * @param {Number} date
@@ -402,8 +406,9 @@ export default {
         if (!previousElement || !previousElement.length) return;
 
         previousElement[0].setAttribute('tabindex', 0);
-        this.currentFocusedRef = this.getRefString(previousDateRef);
+        this.currentFocusedRef = previousDateRef;
         previousElement[0].focus();
+        this.oneFocusableDate();
       });
     },
     /**
@@ -425,8 +430,9 @@ export default {
         if (!nextElement || !nextElement.length) return;
 
         nextElement[0].setAttribute('tabindex', 0);
-        this.currentFocusedRef = this.getRefString(nextDateRef);
+        this.currentFocusedRef = nextDateRef;
         nextElement[0].focus();
+        this.oneFocusableDate();
       });
     },
     /**
@@ -450,8 +456,9 @@ export default {
         if (!previousElement || !previousElement.length) return;
 
         previousElement[0].setAttribute('tabindex', 0);
-        this.currentFocusedRef = this.getRefString(previousDateRef);
+        this.currentFocusedRef = previousDateRef;
         previousElement[0].focus();
+        this.oneFocusableDate();
       });
     },
     /**
@@ -475,8 +482,9 @@ export default {
         if (!nextElement || !nextElement.length) return;
 
         nextElement[0].setAttribute('tabindex', 0);
-        this.currentFocusedRef = this.getRefString(nextDateRef);
+        this.currentFocusedRef = nextDateRef;
         nextElement[0].focus();
+        this.oneFocusableDate();
       });
     },
     handleKeyPress(event) {
@@ -564,6 +572,7 @@ export default {
           alternativeElementToSelect[0].setAttribute('tabindex', 0);
           this.currentFocusedRef = alternativeElementRef;
           alternativeElementToSelect[0].focus();
+          this.oneFocusableDate();
         }
       });
     },
@@ -594,6 +603,7 @@ export default {
         nextElement[0].setAttribute('tabindex', 0);
         this.currentFocusedRef = nextRef;
         nextElement[0].focus();
+        this.oneFocusableDate();
       });
     },
   },
