@@ -1,6 +1,6 @@
 {
   "name": "vue-accessible-datepicker",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "main": "./dist/vue-accessible-datepicker.umd.min.js",
   "files": [
     "dist/*",
