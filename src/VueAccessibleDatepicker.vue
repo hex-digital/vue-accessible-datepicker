@@ -43,8 +43,8 @@
       </div>
 
       <date-picker
-        v-if="isDatePickerVisible"
-        :aria-hidden="!isDatePickerVisible"
+        v-if="isDatePickerVisible || opened"
+        :aria-hidden="!isDatePickerVisible || opened"
         :selected-date="selectedDate"
         :current="current"
         :next="nextMonth"
@@ -149,6 +149,10 @@ export default {
     name: {
       type: String,
       default: null,
+    },
+    opened: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
